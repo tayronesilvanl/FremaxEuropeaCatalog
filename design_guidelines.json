@@ -1,0 +1,160 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "FREMAX Catalog",
+      "archetype": "The Performance Pro",
+      "tone": "Precision, Engineering, High-Performance, Industrial",
+      "vibe": "Dark Mode, Carbon Fiber, Technical Blueprints"
+    },
+    "colors": {
+      "palette": {
+        "background": {
+          "default": "#0A0A0A",
+          "paper": "#121212",
+          "subtle": "#18181B"
+        },
+        "brand": {
+          "primary": "#FFB800",
+          "secondary": "#FF5F1F",
+          "accent": "#F59E0B"
+        },
+        "text": {
+          "primary": "#EDEDED",
+          "secondary": "#A1A1AA",
+          "muted": "#52525B",
+          "inverse": "#09090B"
+        },
+        "status": {
+          "success": "#10B981",
+          "warning": "#F59E0B",
+          "error": "#EF4444",
+          "info": "#3B82F6"
+        },
+        "border": {
+          "default": "#27272A",
+          "active": "#3F3F46"
+        }
+      },
+      "usage": {
+        "primary_button": "bg-[#FFB800] text-black hover:bg-[#F59E0B]",
+        "secondary_button": "bg-transparent border border-[#27272A] text-white hover:border-[#FFB800] hover:text-[#FFB800]",
+        "card_bg": "bg-[#121212] border border-[#27272A]",
+        "input_bg": "bg-[#09090B] border border-[#27272A] focus:border-[#FFB800]"
+      }
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Barlow Condensed, sans-serif",
+        "body": "Manrope, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "scale": {
+        "h1": "text-6xl font-bold tracking-tight uppercase",
+        "h2": "text-4xl font-bold tracking-tight uppercase",
+        "h3": "text-2xl font-semibold tracking-normal uppercase",
+        "body_lg": "text-lg leading-relaxed",
+        "body_base": "text-base leading-relaxed",
+        "caption": "text-sm text-muted-foreground",
+        "mono_code": "font-mono text-sm tracking-wide"
+      }
+    },
+    "spacing": {
+      "container": "max-w-7xl mx-auto px-6 md:px-12",
+      "section_gap": "py-24",
+      "component_gap": "gap-6"
+    },
+    "radius": {
+      "default": "rounded-sm",
+      "button": "rounded-sm",
+      "input": "rounded-none"
+    },
+    "shadows": {
+      "card": "shadow-[0_0_0_1px_rgba(255,255,255,0.05)]",
+      "hover": "shadow-[0_0_15px_rgba(255,184,0,0.15)]",
+      "glow": "drop-shadow-[0_0_8px_rgba(255,184,0,0.5)]"
+    }
+  },
+  "layout_strategies": {
+    "landing_page": {
+      "grid": "grid-cols-1 md:grid-cols-12 gap-8",
+      "hero_section": "h-[80vh] flex items-center justify-center relative overflow-hidden",
+      "search_section": "absolute bottom-12 left-0 right-0 z-20 px-6"
+    },
+    "product_catalog": {
+      "grid": "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+      "filter_sidebar": "w-full md:w-64 flex-shrink-0 border-r border-[#27272A] p-6 hidden md:block"
+    },
+    "datasheet": {
+      "layout": "grid grid-cols-1 lg:grid-cols-12 gap-12",
+      "image_area": "lg:col-span-5 relative",
+      "specs_area": "lg:col-span-7 space-y-8"
+    }
+  },
+  "components": {
+    "SearchInput": {
+      "description": "Massive, central search input for the hero section.",
+      "classes": "w-full h-16 bg-[#09090B]/90 backdrop-blur-md border border-[#27272A] text-xl px-6 text-white placeholder:text-neutral-500 focus:ring-2 focus:ring-[#FFB800] focus:border-transparent transition-all",
+      "icon": "Search icon from lucide-react, text-[#FFB800] w-6 h-6 absolute right-6 top-1/2 -translate-y-1/2"
+    },
+    "ProductCard": {
+      "description": "Minimalist card with technical details.",
+      "classes": "group relative bg-[#121212] border border-[#27272A] hover:border-[#FFB800]/50 transition-colors duration-300 overflow-hidden",
+      "image_container": "aspect-square bg-[#050505] p-6 flex items-center justify-center relative",
+      "info_container": "p-5 space-y-2"
+    },
+    "StatusBadge": {
+      "description": "Indicator for product availability.",
+      "variants": {
+        "developed": "bg-green-500/10 text-green-500 border border-green-500/20",
+        "in_development": "bg-blue-500/10 text-blue-500 border border-blue-500/20",
+        "new": "bg-[#FFB800]/10 text-[#FFB800] border border-[#FFB800]/20",
+        "not_developed": "bg-neutral-800 text-neutral-400 border border-neutral-700"
+      },
+      "classes": "px-2 py-1 text-xs font-mono uppercase tracking-wider rounded-sm inline-flex items-center gap-1.5"
+    },
+    "TechSpecTable": {
+      "description": "Data-dense table for measurements.",
+      "classes": "w-full text-sm text-left border-collapse",
+      "header": "text-neutral-500 font-mono text-xs uppercase tracking-wider border-b border-[#27272A] py-3",
+      "row": "border-b border-[#27272A] hover:bg-[#18181B] transition-colors",
+      "cell": "py-3 text-neutral-300 font-mono"
+    }
+  },
+  "visual_assets": {
+    "images": {
+      "hero_bg": "https://images.unsplash.com/photo-1763087978864-fe5b2778c9f7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTJ8MHwxfHNlYXJjaHw0fHxicmFrZSUyMGRpc2MlMjBhdXRvbW90aXZlfGVufDB8fHx8MTc3MjgwMjgyOHww&ixlib=rb-4.1.0&q=85",
+      "mechanic_bg": "https://images.unsplash.com/photo-1636761358757-0a616eb9e17e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzV8MHwxfHNlYXJjaHwzfHxtZWNoYW5pYyUyMHdvcmtzaG9wJTIwZGFya3xlbnwwfHx8fDE3NzI4MDI4Mjl8MA&ixlib=rb-4.1.0&q=85",
+      "blueprint_overlay": "https://images.unsplash.com/photo-1636706558305-9389f59dac0d?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwyfHx0ZWNobmljYWwlMjBkcmF3aW5nJTIwY2FyJTIwcGFydHxlbnwwfHx8fDE3NzI4MDI4MzB8MA&ixlib=rb-4.1.0&q=85",
+      "logo": "https://customer-assets.emergentagent.com/job_b2d8f042-a3eb-4c92-8bd4-1f08637642bc/artifacts/uu8m5o1z_logo-e-slogan-fx-cmyk-eng-cmyk.png"
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "stroke-[1.5px]"
+    }
+  },
+  "motion": {
+    "micro_interactions": {
+      "hover_lift": "hover:-translate-y-1 transition-transform duration-300 ease-out",
+      "button_press": "active:scale-95 transition-transform duration-100",
+      "fade_in": "animate-in fade-in duration-500"
+    }
+  },
+  "universal_guidelines": [
+    "Always use 'Barlow Condensed' for headings to give that 'Garage/Industrial' feel.",
+    "Use 'JetBrains Mono' for ALL numbers, codes, and dimensions.",
+    "Do not use gradients for backgrounds, use solid dark colors (#0A0A0A) or subtle noise textures.",
+    "Buttons should be sharp (rounded-sm) or pill-shaped, never standard rounded-md.",
+    "Use yellow/orange accents sparingly - only for interactions and key highlights.",
+    "Input fields should feel 'heavy' and 'tactile' with distinct borders.",
+    "Tables must be dense and readable - this is a tool for mechanics, not a lifestyle blog."
+  ],
+  "instructions_to_main_agent": [
+    "Install 'lucide-react' for icons.",
+    "Add fonts: 'Barlow Condensed', 'Manrope', 'JetBrains Mono' via Google Fonts.",
+    "Configure Tailwind colors to match the 'palette' section precisely.",
+    "Create a 'Layout' component that wraps the app with the dark theme class and basic structure.",
+    "Implement the 'SearchInput' component as the hero centerpieces.",
+    "Build the 'ProductCard' component using the 'Bento' grid logic for internal layout.",
+    "Ensure the Admin Dashboard uses the same dark theme but with higher density grids."
+  ]
+}
