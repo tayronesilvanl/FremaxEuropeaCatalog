@@ -10,11 +10,11 @@ import { Label } from "@/components/ui/label";
 const LOGO_URL = "https://customer-assets.emergentagent.com/job_b2d8f042-a3eb-4c92-8bd4-1f08637642bc/artifacts/uu8m5o1z_logo-e-slogan-fx-cmyk-eng-cmyk.png";
 
 const productLines = [
-  { value: "disc", label: "Discos", icon: Disc },
-  { value: "drum", label: "Tambores", icon: CircleDot },
-  { value: "pad", label: "Pastilhas", icon: LayoutGrid },
-  { value: "shoe", label: "Sapatas", icon: Wrench },
-  { value: "caliper", label: "Pinças", icon: Settings2 },
+  { value: "disc", label: "Discs", icon: Disc },
+  { value: "drum", label: "Drums", icon: CircleDot },
+  { value: "pad", label: "Pads", icon: LayoutGrid },
+  { value: "shoe", label: "Shoes", icon: Wrench },
+  { value: "caliper", label: "Calipers", icon: Settings2 },
 ];
 
 export default function HomePage() {
@@ -89,13 +89,7 @@ export default function HomePage() {
             <img src={LOGO_URL} alt="FREMAX" className="h-10 md:h-12" />
           </a>
           <nav className="flex items-center gap-4">
-            <a 
-              href="/admin/login" 
-              className="text-sm text-neutral-400 hover:text-[#FFB800] transition-colors font-mono"
-              data-testid="admin-login-link"
-            >
-              Admin
-            </a>
+            {/* Admin link hidden - access via /admin/login */}
           </nav>
         </div>
       </header>
@@ -105,10 +99,10 @@ export default function HomePage() {
         <section className="hero-section py-20 md:py-32">
           <div className="hero-content text-center">
             <h1 className="font-heading text-5xl md:text-7xl font-bold text-white uppercase tracking-tight mb-4">
-              Catálogo de Produtos
+              Product Catalog
             </h1>
             <p className="text-lg md:text-xl text-neutral-400 mb-12 max-w-2xl mx-auto">
-              Busque por código, aplicação ou medidas. Encontre as especificações técnicas completas de todos os produtos FREMAX.
+              Search by code, application or measurements. Find complete technical specifications for all FREMAX products.
             </p>
 
             {/* Search Tabs */}
@@ -120,21 +114,21 @@ export default function HomePage() {
                     className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-black font-mono text-xs md:text-sm"
                     data-testid="tab-code"
                   >
-                    CÓDIGO / REFERÊNCIA
+                    CODE / REFERENCE
                   </TabsTrigger>
                   <TabsTrigger 
                     value="application"
                     className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-black font-mono text-xs md:text-sm"
                     data-testid="tab-application"
                   >
-                    APLICAÇÃO
+                    APPLICATION
                   </TabsTrigger>
                   <TabsTrigger 
                     value="measurements"
                     className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-black font-mono text-xs md:text-sm"
                     data-testid="tab-measurements"
                   >
-                    MEDIDAS
+                    MEASUREMENTS
                   </TabsTrigger>
                 </TabsList>
 
@@ -143,7 +137,7 @@ export default function HomePage() {
                   <div className="relative">
                     <Input
                       type="text"
-                      placeholder="Digite o Part Number, código original ou referência..."
+                      placeholder="Enter Part Number, original code or reference..."
                       className="search-input-hero pr-12"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -155,10 +149,10 @@ export default function HomePage() {
                   <div className="flex gap-4">
                     <Select value={productLine} onValueChange={setProductLine}>
                       <SelectTrigger className="flex-1 bg-[#09090B] border-[#27272A] h-12" data-testid="select-product-line">
-                        <SelectValue placeholder="Linha de Produto (Opcional)" />
+                        <SelectValue placeholder="Product Line (Optional)" />
                       </SelectTrigger>
                       <SelectContent className="bg-[#121212] border-[#27272A]">
-                        <SelectItem value="all">Todas as Linhas</SelectItem>
+                        <SelectItem value="all">All Lines</SelectItem>
                         {productLines.map((line) => (
                           <SelectItem key={line.value} value={line.value}>
                             {line.label}
@@ -171,7 +165,7 @@ export default function HomePage() {
                       className="h-12 px-8 bg-[#FFB800] text-black hover:bg-[#F59E0B] font-heading uppercase tracking-wider"
                       data-testid="search-button"
                     >
-                      Buscar
+                      Search
                     </Button>
                   </div>
                 </TabsContent>
@@ -180,7 +174,7 @@ export default function HomePage() {
                 <TabsContent value="application" className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-neutral-400 font-mono text-xs">MARCA</Label>
+                      <Label className="text-neutral-400 font-mono text-xs">BRAND</Label>
                       <Input
                         type="text"
                         placeholder="Ex: Volkswagen"
@@ -191,7 +185,7 @@ export default function HomePage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-neutral-400 font-mono text-xs">MODELO</Label>
+                      <Label className="text-neutral-400 font-mono text-xs">MODEL</Label>
                       <Input
                         type="text"
                         placeholder="Ex: Golf"
@@ -202,7 +196,7 @@ export default function HomePage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-neutral-400 font-mono text-xs">ANO</Label>
+                      <Label className="text-neutral-400 font-mono text-xs">YEAR</Label>
                       <Input
                         type="number"
                         placeholder="Ex: 2020"
@@ -216,10 +210,10 @@ export default function HomePage() {
                   <div className="flex gap-4">
                     <Select value={productLine} onValueChange={setProductLine}>
                       <SelectTrigger className="flex-1 bg-[#09090B] border-[#27272A] h-12">
-                        <SelectValue placeholder="Linha de Produto" />
+                        <SelectValue placeholder="Product Line" />
                       </SelectTrigger>
                       <SelectContent className="bg-[#121212] border-[#27272A]">
-                        <SelectItem value="all">Todas as Linhas</SelectItem>
+                        <SelectItem value="all">All Lines</SelectItem>
                         {productLines.map((line) => (
                           <SelectItem key={line.value} value={line.value}>
                             {line.label}
@@ -232,7 +226,7 @@ export default function HomePage() {
                       className="h-12 px-8 bg-[#FFB800] text-black hover:bg-[#F59E0B] font-heading uppercase tracking-wider"
                       data-testid="search-button-app"
                     >
-                      Buscar
+                      Search
                     </Button>
                   </div>
                 </TabsContent>
@@ -240,10 +234,10 @@ export default function HomePage() {
                 {/* Measurements Search */}
                 <TabsContent value="measurements" className="space-y-4">
                   <div className="space-y-2 mb-4">
-                    <Label className="text-neutral-400 font-mono text-xs">LINHA DE PRODUTO</Label>
+                    <Label className="text-neutral-400 font-mono text-xs">PRODUCT LINE</Label>
                     <Select value={productLine} onValueChange={setProductLine}>
                       <SelectTrigger className="w-full bg-[#09090B] border-[#27272A] h-12">
-                        <SelectValue placeholder="Selecione a linha de produto" />
+                        <SelectValue placeholder="Select product line" />
                       </SelectTrigger>
                       <SelectContent className="bg-[#121212] border-[#27272A]">
                         {productLines.map((line) => (
@@ -259,7 +253,7 @@ export default function HomePage() {
                   {productLine === "disc" && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">DIÂMETRO EXT. (mm)</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">OUTER DIA. (mm)</Label>
                         <Input
                           type="number"
                           placeholder="Ex: 280"
@@ -270,7 +264,7 @@ export default function HomePage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">ESPESSURA (mm)</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">THICKNESS (mm)</Label>
                         <Input
                           type="number"
                           placeholder="Ex: 22"
@@ -281,7 +275,7 @@ export default function HomePage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">FURO CENTRAL (mm)</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">CENTER HOLE (mm)</Label>
                         <Input
                           type="number"
                           placeholder="Ex: 65"
@@ -292,7 +286,7 @@ export default function HomePage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">QTD. FUROS</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">QTY. HOLES</Label>
                         <Input
                           type="number"
                           placeholder="Ex: 5"
@@ -309,7 +303,7 @@ export default function HomePage() {
                   {productLine === "pad" && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">LARGURA (mm)</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">WIDTH (mm)</Label>
                         <Input
                           type="number"
                           placeholder="Ex: 155"
@@ -320,7 +314,7 @@ export default function HomePage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">ALTURA (mm)</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">HEIGHT (mm)</Label>
                         <Input
                           type="number"
                           placeholder="Ex: 60"
@@ -331,7 +325,7 @@ export default function HomePage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">ESPESSURA (mm)</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">THICKNESS (mm)</Label>
                         <Input
                           type="number"
                           placeholder="Ex: 17"
@@ -348,7 +342,7 @@ export default function HomePage() {
                   {productLine === "drum" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">DIÂMETRO EXTERNO (mm)</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">OUTER DIAMETER (mm)</Label>
                         <Input
                           type="number"
                           placeholder="Ex: 200"
@@ -358,7 +352,7 @@ export default function HomePage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">ALTURA (mm)</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">HEIGHT (mm)</Label>
                         <Input
                           type="number"
                           placeholder="Ex: 50"
@@ -372,13 +366,13 @@ export default function HomePage() {
 
                   {(productLine === "shoe" || productLine === "caliper") && (
                     <p className="text-neutral-500 text-sm font-mono">
-                      Busca por medidas não disponível para esta linha. Use busca por código ou aplicação.
+                      Measurement search not available for this line. Use code or application search.
                     </p>
                   )}
 
                   {!productLine && (
                     <p className="text-neutral-500 text-sm font-mono">
-                      Selecione uma linha de produto para ver os filtros de medidas.
+                      Select a product line to see measurement filters.
                     </p>
                   )}
 
@@ -388,7 +382,7 @@ export default function HomePage() {
                     disabled={!productLine || productLine === "shoe" || productLine === "caliper"}
                     data-testid="search-button-measurements"
                   >
-                    Buscar por Medidas
+                    Search by Measurements
                   </Button>
                 </TabsContent>
               </Tabs>
@@ -400,7 +394,7 @@ export default function HomePage() {
         <section className="py-16 px-6 border-t border-[#27272A]">
           <div className="max-w-7xl mx-auto">
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-white uppercase tracking-tight mb-8 text-center">
-              Linhas de Produto
+              Product Lines
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {productLines.map((line) => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft, Loader2, Disc, CircleDot, LayoutGrid, Wrench, Settings2, Car, Tag, Package, Ruler } from "lucide-react";
+import { ArrowLeft, Loader2, Disc, CircleDot, LayoutGrid, Wrench, Settings2, Car, Tag, Package, Ruler, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,18 +19,18 @@ const productLineIcons = {
 };
 
 const productLineLabels = {
-  disc: "Disco de Freio",
-  drum: "Tambor de Freio",
-  pad: "Pastilha de Freio",
-  shoe: "Sapata de Freio",
-  caliper: "Pinça de Freio",
+  disc: "Brake Disc",
+  drum: "Brake Drum",
+  pad: "Brake Pad",
+  shoe: "Brake Shoe",
+  caliper: "Brake Caliper",
 };
 
 const statusLabels = {
-  developed: "Desenvolvido",
-  not_developed: "Não Desenvolvido",
-  in_development: "Em Desenvolvimento",
-  new: "Novo no Portfólio",
+  developed: "Developed",
+  not_developed: "Not Developed",
+  in_development: "In Development",
+  new: "New in Portfolio",
 };
 
 const statusClasses = {
@@ -41,22 +41,52 @@ const statusClasses = {
 };
 
 const measurementLabels = {
-  outer_diameter: "Diâmetro Externo",
-  inner_diameter: "Diâmetro Interno",
-  height: "Altura",
-  thickness: "Espessura",
-  center_hole: "Furo Central",
-  quantity_holes: "Qtd. Furos",
+  outer_diameter: "Outer Diameter",
+  inner_diameter: "Inner Diameter",
+  height: "Height",
+  thickness: "Thickness",
+  center_hole: "Center Hole",
+  quantity_holes: "Qty. Holes",
   pcd: "PCD",
-  width: "Largura",
-  radius: "Raio",
-  piston_diameter: "Diâmetro Pistão",
-  position: "Posição",
+  width: "Width",
+  radius: "Radius",
+  piston_diameter: "Piston Diameter",
+  position: "Position",
 };
+
+function RelatedProductCard({ product }) {
+  const Icon = productLineIcons[product.product_line] || Disc;
+  
+  return (
+    <Link
+      to={`/product/${product.id}`}
+      className="group bg-[#121212] border border-[#27272A] hover:border-[#FFB800]/50 transition-all p-4"
+      data-testid={`related-product-${product.part_number}`}
+    >
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-16 bg-[#050505] flex items-center justify-center shrink-0">
+          {product.image_url ? (
+            <img src={product.image_url} alt={product.part_number} className="max-w-full max-h-full object-contain" />
+          ) : (
+            <Icon className="w-8 h-8 text-[#27272A] group-hover:text-[#FFB800]/50 transition-colors" />
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-mono text-xs text-neutral-500">{productLineLabels[product.product_line]}</p>
+          <p className="font-heading text-lg text-white uppercase truncate group-hover:text-[#FFB800] transition-colors">
+            {product.part_number}
+          </p>
+          <p className="text-sm text-neutral-400 truncate">{product.description}</p>
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 export default function ProductDatasheetPage() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -66,9 +96,17 @@ export default function ProductDatasheetPage() {
       try {
         const response = await axios.get(`${API}/products/${id}`);
         setProduct(response.data);
+        
+        // Fetch related products
+        try {
+          const relatedResponse = await axios.get(`${API}/products/${id}/related?limit=4`);
+          setRelatedProducts(relatedResponse.data);
+        } catch (err) {
+          console.error("Error fetching related products:", err);
+        }
       } catch (err) {
         console.error("Error fetching product:", err);
-        setError("Produto não encontrado");
+        setError("Product not found");
       } finally {
         setLoading(false);
       }
@@ -88,11 +126,11 @@ export default function ProductDatasheetPage() {
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex flex-col items-center justify-center">
         <Disc className="w-20 h-20 text-[#27272A] mb-4" />
-        <h1 className="font-heading text-3xl text-white uppercase mb-4">Produto não encontrado</h1>
+        <h1 className="font-heading text-3xl text-white uppercase mb-4">Product Not Found</h1>
         <Link to="/">
           <Button className="bg-[#FFB800] text-black hover:bg-[#F59E0B]">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar para Home
+            Back to Home
           </Button>
         </Link>
       </div>
@@ -115,7 +153,7 @@ export default function ProductDatasheetPage() {
             className="text-neutral-400 hover:text-white transition-colors flex items-center gap-2 font-mono text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
-            Voltar aos Resultados
+            Back to Results
           </Link>
         </div>
       </header>
@@ -140,6 +178,15 @@ export default function ProductDatasheetPage() {
               {product.description}
             </p>
           </div>
+          {/* Open Datasheet Button */}
+          <Button 
+            className="bg-[#FFB800] text-black hover:bg-[#F59E0B] font-heading uppercase tracking-wider h-12 px-6"
+            onClick={() => window.open(`/datasheet/${product.id}`, '_blank')}
+            data-testid="open-datasheet-button"
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Open Datasheet
+          </Button>
         </div>
 
         {/* Main Content Grid */}
@@ -161,7 +208,7 @@ export default function ProductDatasheetPage() {
               <div className="mt-4 bg-[#121212] border border-[#27272A] aspect-video flex items-center justify-center p-4">
                 <img 
                   src={product.drawing_url} 
-                  alt={`Desenho técnico ${product.part_number}`}
+                  alt={`Technical drawing ${product.part_number}`}
                   className="max-w-full max-h-full object-contain"
                 />
               </div>
@@ -177,14 +224,14 @@ export default function ProductDatasheetPage() {
                   className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-black font-mono text-xs"
                 >
                   <Ruler className="w-4 h-4 mr-2" />
-                  MEDIDAS
+                  SPECS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="applications"
                   className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-black font-mono text-xs"
                 >
                   <Car className="w-4 h-4 mr-2" />
-                  APLICAÇÕES
+                  APPLICATIONS
                 </TabsTrigger>
                 <TabsTrigger 
                   value="cross"
@@ -198,7 +245,7 @@ export default function ProductDatasheetPage() {
                   className="data-[state=active]:bg-[#FFB800] data-[state=active]:text-black font-mono text-xs"
                 >
                   <Package className="w-4 h-4 mr-2" />
-                  LOGÍSTICA
+                  LOGISTICS
                 </TabsTrigger>
               </TabsList>
 
@@ -206,14 +253,14 @@ export default function ProductDatasheetPage() {
               <TabsContent value="specs" className="mt-6">
                 <div className="bg-[#121212] border border-[#27272A] p-6">
                   <h3 className="font-heading text-xl text-white uppercase mb-4">
-                    Especificações Técnicas
+                    Technical Specifications
                   </h3>
                   {product.measurements && Object.keys(product.measurements).length > 0 ? (
                     <table className="spec-table w-full">
                       <thead>
                         <tr>
-                          <th>Dimensão</th>
-                          <th>Valor</th>
+                          <th>Dimension</th>
+                          <th>Value</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -229,7 +276,7 @@ export default function ProductDatasheetPage() {
                     </table>
                   ) : (
                     <p className="text-neutral-500 font-mono text-sm">
-                      Medidas não disponíveis para este produto.
+                      Measurements not available for this product.
                     </p>
                   )}
                 </div>
@@ -239,15 +286,15 @@ export default function ProductDatasheetPage() {
               <TabsContent value="applications" className="mt-6">
                 <div className="bg-[#121212] border border-[#27272A] p-6">
                   <h3 className="font-heading text-xl text-white uppercase mb-4">
-                    Aplicações por Veículo
+                    Vehicle Applications
                   </h3>
                   {product.applications && product.applications.length > 0 ? (
                     <table className="spec-table w-full">
                       <thead>
                         <tr>
-                          <th>Marca</th>
-                          <th>Modelo</th>
-                          <th>Anos</th>
+                          <th>Brand</th>
+                          <th>Model</th>
+                          <th>Years</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -264,7 +311,7 @@ export default function ProductDatasheetPage() {
                     </table>
                   ) : (
                     <p className="text-neutral-500 font-mono text-sm">
-                      Aplicações não cadastradas para este produto.
+                      No applications registered for this product.
                     </p>
                   )}
                 </div>
@@ -274,14 +321,14 @@ export default function ProductDatasheetPage() {
               <TabsContent value="cross" className="mt-6">
                 <div className="bg-[#121212] border border-[#27272A] p-6">
                   <h3 className="font-heading text-xl text-white uppercase mb-4">
-                    Referências Cruzadas
+                    Cross References
                   </h3>
                   {product.cross_references && product.cross_references.length > 0 ? (
                     <table className="spec-table w-full">
                       <thead>
                         <tr>
-                          <th>Fabricante</th>
-                          <th>Código</th>
+                          <th>Manufacturer</th>
+                          <th>Code</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -295,7 +342,7 @@ export default function ProductDatasheetPage() {
                     </table>
                   ) : (
                     <p className="text-neutral-500 font-mono text-sm">
-                      Referências cruzadas não cadastradas para este produto.
+                      No cross references registered for this product.
                     </p>
                   )}
                 </div>
@@ -305,20 +352,20 @@ export default function ProductDatasheetPage() {
               <TabsContent value="logistics" className="mt-6">
                 <div className="bg-[#121212] border border-[#27272A] p-6">
                   <h3 className="font-heading text-xl text-white uppercase mb-4">
-                    Informações Logísticas
+                    Logistics Information
                   </h3>
                   {product.logistics ? (
                     <table className="spec-table w-full">
                       <tbody>
                         {product.logistics.weight_kg && (
                           <tr>
-                            <td className="text-neutral-400">Peso</td>
+                            <td className="text-neutral-400">Weight</td>
                             <td className="text-white font-mono">{product.logistics.weight_kg} kg</td>
                           </tr>
                         )}
                         {product.logistics.packaging_width && (
                           <tr>
-                            <td className="text-neutral-400">Embalagem (LxAxP)</td>
+                            <td className="text-neutral-400">Packaging (WxHxD)</td>
                             <td className="text-white font-mono">
                               {product.logistics.packaging_width} x {product.logistics.packaging_height} x {product.logistics.packaging_depth} mm
                             </td>
@@ -326,7 +373,7 @@ export default function ProductDatasheetPage() {
                         )}
                         {product.logistics.ean_code && (
                           <tr>
-                            <td className="text-neutral-400">Código EAN</td>
+                            <td className="text-neutral-400">EAN Code</td>
                             <td className="text-white font-mono">{product.logistics.ean_code}</td>
                           </tr>
                         )}
@@ -340,7 +387,7 @@ export default function ProductDatasheetPage() {
                     </table>
                   ) : (
                     <p className="text-neutral-500 font-mono text-sm">
-                      Informações logísticas não disponíveis.
+                      Logistics information not available.
                     </p>
                   )}
                 </div>
@@ -351,13 +398,30 @@ export default function ProductDatasheetPage() {
             {product.notes && (
               <div className="mt-6 bg-[#121212] border border-[#27272A] p-6">
                 <h3 className="font-heading text-xl text-white uppercase mb-4">
-                  Observações
+                  Notes
                 </h3>
                 <p className="text-neutral-400 whitespace-pre-wrap">{product.notes}</p>
               </div>
             )}
           </div>
         </div>
+
+        {/* Related Products Section */}
+        {relatedProducts.length > 0 && (
+          <section className="mt-12 pt-12 border-t border-[#27272A]">
+            <h2 className="font-heading text-2xl text-white uppercase mb-6">
+              Related Products
+            </h2>
+            <p className="text-neutral-500 font-mono text-sm mb-6">
+              Products with common vehicle applications
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-testid="related-products-grid">
+              {relatedProducts.map((relatedProduct) => (
+                <RelatedProductCard key={relatedProduct.id} product={relatedProduct} />
+              ))}
+            </div>
+          </section>
+        )}
       </main>
 
       {/* Footer */}

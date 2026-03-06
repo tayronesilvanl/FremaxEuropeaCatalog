@@ -21,18 +21,18 @@ const productLineIcons = {
 };
 
 const productLineLabels = {
-  disc: "Disco",
-  drum: "Tambor",
-  pad: "Pastilha",
-  shoe: "Sapata",
-  caliper: "Pinça",
+  disc: "Disc",
+  drum: "Drum",
+  pad: "Pad",
+  shoe: "Shoe",
+  caliper: "Caliper",
 };
 
 const statusLabels = {
-  developed: "Desenvolvido",
-  not_developed: "Não Desenvolvido",
-  in_development: "Em Desenvolvimento",
-  new: "Novo",
+  developed: "Developed",
+  not_developed: "Not Developed",
+  in_development: "In Development",
+  new: "New",
 };
 
 const statusClasses = {
@@ -140,6 +140,15 @@ export default function SearchResultsPage() {
       setTotalPages(response.data.total_pages);
       setTotal(response.data.total);
       setCurrentPage(page);
+      
+      // Track not found codes when searching by code and no results
+      if (query && response.data.total === 0) {
+        try {
+          await axios.post(`${API}/track-not-found?code=${encodeURIComponent(query)}`);
+        } catch (err) {
+          console.error("Failed to track not found code:", err);
+        }
+      }
     } catch (error) {
       console.error("Search error:", error);
       setProducts([]);
@@ -207,7 +216,7 @@ export default function SearchResultsPage() {
             <div className="relative flex-1 max-w-xl">
               <Input
                 type="text"
-                placeholder="Buscar por código ou referência..."
+                placeholder="Search by code or reference..."
                 className="w-full h-10 bg-[#121212] border-[#27272A] pl-4 pr-10"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -224,7 +233,7 @@ export default function SearchResultsPage() {
                   data-testid="filters-button"
                 >
                   <Filter className="w-4 h-4 mr-2" />
-                  Filtros
+                  Filters
                   {activeFiltersCount > 0 && (
                     <span className="absolute -top-2 -right-2 w-5 h-5 bg-[#FFB800] text-black text-xs font-mono rounded-full flex items-center justify-center">
                       {activeFiltersCount}
@@ -234,33 +243,33 @@ export default function SearchResultsPage() {
               </SheetTrigger>
               <SheetContent className="bg-[#121212] border-l border-[#27272A] w-full sm:max-w-md overflow-y-auto">
                 <SheetHeader>
-                  <SheetTitle className="font-heading text-white uppercase">Filtros Avançados</SheetTitle>
+                  <SheetTitle className="font-heading text-white uppercase">Advanced Filters</SheetTitle>
                 </SheetHeader>
                 <div className="space-y-6 mt-6">
                   {/* Product Line */}
                   <div className="space-y-2">
-                    <Label className="text-neutral-400 font-mono text-xs">LINHA DE PRODUTO</Label>
+                    <Label className="text-neutral-400 font-mono text-xs">PRODUCT LINE</Label>
                     <Select value={productLine} onValueChange={setProductLine}>
                       <SelectTrigger className="bg-[#09090B] border-[#27272A]">
-                        <SelectValue placeholder="Todas as linhas" />
+                        <SelectValue placeholder="All lines" />
                       </SelectTrigger>
                       <SelectContent className="bg-[#121212] border-[#27272A]">
-                        <SelectItem value="all">Todas as linhas</SelectItem>
-                        <SelectItem value="disc">Discos</SelectItem>
-                        <SelectItem value="drum">Tambores</SelectItem>
-                        <SelectItem value="pad">Pastilhas</SelectItem>
-                        <SelectItem value="shoe">Sapatas</SelectItem>
-                        <SelectItem value="caliper">Pinças</SelectItem>
+                        <SelectItem value="all">All lines</SelectItem>
+                        <SelectItem value="disc">Discs</SelectItem>
+                        <SelectItem value="drum">Drums</SelectItem>
+                        <SelectItem value="pad">Pads</SelectItem>
+                        <SelectItem value="shoe">Shoes</SelectItem>
+                        <SelectItem value="caliper">Calipers</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   {/* Application Filters */}
                   <div className="space-y-4">
-                    <h4 className="font-heading text-white uppercase text-sm">Aplicação</h4>
+                    <h4 className="font-heading text-white uppercase text-sm">Application</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">MARCA</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">BRAND</Label>
                         <Input
                           type="text"
                           placeholder="Ex: VW"
@@ -270,7 +279,7 @@ export default function SearchResultsPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">MODELO</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">MODEL</Label>
                         <Input
                           type="text"
                           placeholder="Ex: Golf"
@@ -281,7 +290,7 @@ export default function SearchResultsPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-neutral-400 font-mono text-xs">ANO</Label>
+                      <Label className="text-neutral-400 font-mono text-xs">YEAR</Label>
                       <Input
                         type="number"
                         placeholder="Ex: 2020"
@@ -295,10 +304,10 @@ export default function SearchResultsPage() {
                   {/* Disc Measurements */}
                   {(productLine === "disc" || !productLine || productLine === "all") && (
                     <div className="space-y-4">
-                      <h4 className="font-heading text-white uppercase text-sm">Medidas - Discos</h4>
+                      <h4 className="font-heading text-white uppercase text-sm">Disc Measurements</h4>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label className="text-neutral-400 font-mono text-xs">DIÂMETRO (mm)</Label>
+                          <Label className="text-neutral-400 font-mono text-xs">DIAMETER (mm)</Label>
                           <Input
                             type="number"
                             placeholder="Ex: 280"
@@ -308,7 +317,7 @@ export default function SearchResultsPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-neutral-400 font-mono text-xs">ESPESSURA (mm)</Label>
+                          <Label className="text-neutral-400 font-mono text-xs">THICKNESS (mm)</Label>
                           <Input
                             type="number"
                             placeholder="Ex: 22"
@@ -318,7 +327,7 @@ export default function SearchResultsPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-neutral-400 font-mono text-xs">FURO CENTRAL (mm)</Label>
+                          <Label className="text-neutral-400 font-mono text-xs">CENTER HOLE (mm)</Label>
                           <Input
                             type="number"
                             placeholder="Ex: 65"
@@ -328,7 +337,7 @@ export default function SearchResultsPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-neutral-400 font-mono text-xs">QTD. FUROS</Label>
+                          <Label className="text-neutral-400 font-mono text-xs">QTY. HOLES</Label>
                           <Input
                             type="number"
                             placeholder="Ex: 5"
@@ -344,10 +353,10 @@ export default function SearchResultsPage() {
                   {/* Pad Measurements */}
                   {(productLine === "pad" || !productLine || productLine === "all") && (
                     <div className="space-y-4">
-                      <h4 className="font-heading text-white uppercase text-sm">Medidas - Pastilhas</h4>
+                      <h4 className="font-heading text-white uppercase text-sm">Pad Measurements</h4>
                       <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-2">
-                          <Label className="text-neutral-400 font-mono text-xs">LARGURA (mm)</Label>
+                          <Label className="text-neutral-400 font-mono text-xs">WIDTH (mm)</Label>
                           <Input
                             type="number"
                             placeholder="155"
@@ -357,7 +366,7 @@ export default function SearchResultsPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-neutral-400 font-mono text-xs">ALTURA (mm)</Label>
+                          <Label className="text-neutral-400 font-mono text-xs">HEIGHT (mm)</Label>
                           <Input
                             type="number"
                             placeholder="60"
@@ -367,7 +376,7 @@ export default function SearchResultsPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-neutral-400 font-mono text-xs">ESPESSURA (mm)</Label>
+                          <Label className="text-neutral-400 font-mono text-xs">THICKNESS (mm)</Label>
                           <Input
                             type="number"
                             placeholder="17"
@@ -387,14 +396,14 @@ export default function SearchResultsPage() {
                       onClick={clearFilters}
                     >
                       <X className="w-4 h-4 mr-2" />
-                      Limpar
+                      Clear
                     </Button>
                     <Button 
                       className="flex-1 bg-[#FFB800] text-black hover:bg-[#F59E0B]"
                       onClick={handleSearch}
                       data-testid="apply-filters-button"
                     >
-                      Aplicar Filtros
+                      Apply Filters
                     </Button>
                   </div>
                 </div>
@@ -410,10 +419,10 @@ export default function SearchResultsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-heading text-2xl md:text-3xl text-white uppercase">
-              Resultados
+              Results
             </h1>
             <p className="text-neutral-500 font-mono text-sm mt-1">
-              {total} produto{total !== 1 ? "s" : ""} encontrado{total !== 1 ? "s" : ""}
+              {total} product{total !== 1 ? "s" : ""} found
             </p>
           </div>
           {activeFiltersCount > 0 && (
@@ -423,7 +432,7 @@ export default function SearchResultsPage() {
               onClick={clearFilters}
             >
               <X className="w-4 h-4 mr-2" />
-              Limpar filtros ({activeFiltersCount})
+              Clear filters ({activeFiltersCount})
             </Button>
           )}
         </div>
@@ -436,14 +445,14 @@ export default function SearchResultsPage() {
         ) : products.length === 0 ? (
           <div className="text-center py-20">
             <Disc className="w-16 h-16 text-[#27272A] mx-auto mb-4" />
-            <h2 className="font-heading text-2xl text-white uppercase mb-2">Nenhum produto encontrado</h2>
-            <p className="text-neutral-500 mb-6">Tente ajustar os filtros ou termos de busca</p>
+            <h2 className="font-heading text-2xl text-white uppercase mb-2">No products found</h2>
+            <p className="text-neutral-500 mb-6">Try adjusting filters or search terms</p>
             <Button 
               variant="outline" 
               className="border-[#FFB800] text-[#FFB800] hover:bg-[#FFB800] hover:text-black"
               onClick={() => navigate("/")}
             >
-              Voltar para Home
+              Back to Home
             </Button>
           </div>
         ) : (
@@ -465,10 +474,10 @@ export default function SearchResultsPage() {
                   onClick={() => searchProducts(currentPage - 1)}
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
-                  Anterior
+                  Previous
                 </Button>
                 <span className="font-mono text-neutral-400">
-                  Página {currentPage} de {totalPages}
+                  Page {currentPage} of {totalPages}
                 </span>
                 <Button
                   variant="outline"
@@ -476,7 +485,7 @@ export default function SearchResultsPage() {
                   disabled={currentPage === totalPages}
                   onClick={() => searchProducts(currentPage + 1)}
                 >
-                  Próxima
+                  Next
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>

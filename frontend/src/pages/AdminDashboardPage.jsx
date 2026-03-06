@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { 
   LogOut, Plus, Upload, Search, Trash2, Edit, Loader2, 
   Disc, CircleDot, LayoutGrid, Wrench, Settings2,
-  Package, BarChart3, ChevronLeft, ChevronRight, X, FileJson, FileSpreadsheet
+  Package, BarChart3, ChevronLeft, ChevronRight, X, FileJson, FileSpreadsheet, AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,18 +29,18 @@ const productLineIcons = {
 };
 
 const productLineLabels = {
-  disc: "Disco",
-  drum: "Tambor",
-  pad: "Pastilha",
-  shoe: "Sapata",
-  caliper: "Pinça",
+  disc: "Disc",
+  drum: "Drum",
+  pad: "Pad",
+  shoe: "Shoe",
+  caliper: "Caliper",
 };
 
 const statusLabels = {
-  developed: "Desenvolvido",
-  not_developed: "Não Desenvolvido",
-  in_development: "Em Desenvolvimento",
-  new: "Novo",
+  developed: "Developed",
+  not_developed: "Not Developed",
+  in_development: "In Development",
+  new: "New",
 };
 
 const statusClasses = {
@@ -532,20 +532,20 @@ export default function AdminDashboardPage() {
   };
 
   const handleDeleteProduct = async (productId) => {
-    if (!window.confirm("Tem certeza que deseja excluir este produto?")) return;
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       await axiosAuth.delete(`${API}/admin/products/${productId}`);
-      toast.success("Produto excluído!");
+      toast.success("Product deleted!");
       fetchProducts(currentPage);
       fetchStats();
     } catch (error) {
-      toast.error("Erro ao excluir produto");
+      toast.error("Error deleting product");
     }
   };
 
   const handleBulkImport = async () => {
     if (!importFile) {
-      toast.error("Selecione um arquivo");
+      toast.error("Select a file");
       return;
     }
 
@@ -557,7 +557,7 @@ export default function AdminDashboardPage() {
       const response = await axiosAuth.post(`${API}/admin/products/bulk`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
-      toast.success(`${response.data.imported} produtos importados!`);
+      toast.success(`${response.data.imported} products imported!`);
       if (response.data.errors.length > 0) {
         toast.warning(`${response.data.errors.length} erros durante importação`);
       }

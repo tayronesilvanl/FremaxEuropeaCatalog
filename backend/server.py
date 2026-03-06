@@ -342,11 +342,91 @@ async def get_product_lines():
 async def get_statuses():
     """Get all product statuses"""
     return [
-        {"value": "developed", "label": "Desenvolvido"},
-        {"value": "not_developed", "label": "Não Desenvolvido"},
-        {"value": "in_development", "label": "Em Desenvolvimento"},
-        {"value": "new", "label": "Novo no Portfólio"}
+        {"value": "developed", "label": "Developed"},
+        {"value": "not_developed", "label": "Not Developed"},
+        {"value": "in_development", "label": "In Development"},
+        {"value": "new", "label": "New in Portfolio"}
     ]
+
+# ========== NOT FOUND CODES TRACKING ==========
+
+class NotFoundCode(BaseModel):
+    code: str
+    search_count: int = 1
+    first_searched: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    last_searched: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    ip_addresses: List[str] = []
+
+@api_router.post("/track-not-found")
+async def track_not_found_code(code: str):
+    """Track codes that customers search but don't find"""
+    if not code or len(code) < 2:
+        return {"status": "ignored"}
+    
+    code_upper = code.upper().strip()
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Check if product exists - if yes, don't track
+    existing = await db.products.find_one({
+        "$or": [
+            {"part_number": {"$regex": f"^{code_upper}$", "$options": "i"}},
+            {"cross_references.code": {"$regex": f"^{code_upper}$", "$options": "i"}}
+        ]
+    })
+    
+    if existing:
+        return {"status": "found", "product_id": existing.get("id")}
+    
+    # Update or insert not found code
+    await db.not_found_codes.update_one(
+        {"code": code_upper},
+        {
+            "$set": {"last_searched": now},
+            "$inc": {"search_count": 1},
+            "$setOnInsert": {"first_searched": now, "code": code_upper}
+        },
+        upsert=True
+    )
+    
+    return {"status": "tracked"}
+
+@api_router.get("/products/{product_id}/related")
+async def get_related_products(product_id: str, limit: int = 6):
+    """Get products with common applications"""
+    product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    applications = product.get("applications", [])
+    if not applications:
+        # If no applications, return same product line
+        related = await db.products.find(
+            {"product_line": product["product_line"], "id": {"$ne": product_id}},
+            {"_id": 0}
+        ).limit(limit).to_list(limit)
+        return related
+    
+    # Find products with overlapping applications
+    brand_models = [(app["brand"], app["model"]) for app in applications]
+    
+    or_conditions = []
+    for brand, model in brand_models:
+        or_conditions.append({
+            "applications": {
+                "$elemMatch": {
+                    "brand": {"$regex": brand, "$options": "i"},
+                    "model": {"$regex": model, "$options": "i"}
+                }
+            }
+        })
+    
+    related = await db.products.find(
+        {"$or": or_conditions, "id": {"$ne": product_id}},
+        {"_id": 0}
+    ).limit(limit).to_list(limit)
+    
+    return related
+
 
 # ========== ADMIN ROUTES ==========
 
@@ -567,11 +647,52 @@ async def admin_stats(username: str = Depends(verify_token)):
     ]
     by_status = await db.products.aggregate(pipeline_status).to_list(10)
     
+    # Count not found codes
+    not_found_count = await db.not_found_codes.count_documents({})
+    
     return {
         "total_products": total,
         "by_product_line": {item["_id"]: item["count"] for item in by_line if item["_id"]},
-        "by_status": {item["_id"]: item["count"] for item in by_status if item["_id"]}
+        "by_status": {item["_id"]: item["count"] for item in by_status if item["_id"]},
+        "not_found_codes": not_found_count
     }
+
+@api_router.get("/admin/not-found-codes")
+async def get_not_found_codes(
+    page: int = 1,
+    page_size: int = 50,
+    sort_by: str = "search_count",
+    username: str = Depends(verify_token)
+):
+    """Get list of codes that customers searched but didn't find"""
+    total = await db.not_found_codes.count_documents({})
+    skip = (page - 1) * page_size
+    
+    sort_field = "search_count" if sort_by == "search_count" else "last_searched"
+    
+    codes = await db.not_found_codes.find({}, {"_id": 0}).sort(sort_field, -1).skip(skip).limit(page_size).to_list(page_size)
+    
+    return {
+        "items": codes,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (total + page_size - 1) // page_size if total > 0 else 1
+    }
+
+@api_router.delete("/admin/not-found-codes/{code}")
+async def delete_not_found_code(code: str, username: str = Depends(verify_token)):
+    """Delete a not found code (e.g., after adding the product)"""
+    result = await db.not_found_codes.delete_one({"code": code.upper()})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Code not found")
+    return {"message": "Code deleted"}
+
+@api_router.delete("/admin/not-found-codes")
+async def clear_all_not_found_codes(username: str = Depends(verify_token)):
+    """Clear all not found codes"""
+    result = await db.not_found_codes.delete_many({})
+    return {"deleted": result.deleted_count}
 
 # Include router
 app.include_router(api_router)
