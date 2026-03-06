@@ -20,7 +20,7 @@ export default function AdminLoginPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!username || !password) {
-      toast.error("Preencha todos os campos");
+      toast.error("Please fill in all fields");
       return;
     }
 
@@ -32,11 +32,11 @@ export default function AdminLoginPage() {
       });
       
       localStorage.setItem("admin_token", response.data.access_token);
-      toast.success("Login realizado com sucesso!");
+      toast.success("Login successful!");
       navigate("/admin");
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Credenciais inválidas");
+      toast.error("Invalid credentials");
     } finally {
       setLoading(false);
     }
@@ -45,12 +45,12 @@ export default function AdminLoginPage() {
   const setupAdmin = async () => {
     try {
       const response = await axios.post(`${API}/admin/setup`);
-      toast.success(`Admin criado! Usuário: ${response.data.username}, Senha: ${response.data.password}`);
+      toast.success(`Admin created! User: ${response.data.username}, Password: ${response.data.password}`);
     } catch (error) {
       if (error.response?.data?.message === "Admin already exists") {
-        toast.info("Admin já existe. Use: admin / admin123");
+        toast.info("Admin already exists. Use: admin / admin123");
       } else {
-        toast.error("Erro ao criar admin");
+        toast.error("Error creating admin");
       }
     }
   };
@@ -68,7 +68,7 @@ export default function AdminLoginPage() {
             className="text-neutral-400 hover:text-white transition-colors flex items-center gap-2 font-mono text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
-            Voltar ao Catálogo
+            Back to Catalog
           </Link>
         </div>
       </header>
@@ -78,24 +78,24 @@ export default function AdminLoginPage() {
         <Card className="w-full max-w-md bg-[#121212] border-[#27272A]">
           <CardHeader className="text-center">
             <CardTitle className="font-heading text-3xl text-white uppercase">
-              Área Administrativa
+              Admin Area
             </CardTitle>
             <CardDescription className="text-neutral-500">
-              Faça login para gerenciar os produtos do catálogo
+              Login to manage catalog products
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="username" className="text-neutral-400 font-mono text-xs uppercase">
-                  Usuário
+                  Username
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
                   <Input
                     id="username"
                     type="text"
-                    placeholder="Digite seu usuário"
+                    placeholder="Enter your username"
                     className="pl-10 bg-[#09090B] border-[#27272A] h-12"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -106,14 +106,14 @@ export default function AdminLoginPage() {
               
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-neutral-400 font-mono text-xs uppercase">
-                  Senha
+                  Password
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Digite sua senha"
+                    placeholder="Enter your password"
                     className="pl-10 bg-[#09090B] border-[#27272A] h-12"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -131,17 +131,17 @@ export default function AdminLoginPage() {
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Entrando...
+                    Logging in...
                   </>
                 ) : (
-                  "Entrar"
+                  "Login"
                 )}
               </Button>
             </form>
 
             <div className="mt-6 pt-6 border-t border-[#27272A]">
               <p className="text-neutral-500 text-xs font-mono text-center mb-4">
-                Primeiro acesso? Clique abaixo para criar o admin padrão.
+                First access? Click below to create default admin.
               </p>
               <Button
                 variant="outline"
@@ -149,7 +149,7 @@ export default function AdminLoginPage() {
                 onClick={setupAdmin}
                 data-testid="setup-admin-button"
               >
-                Criar Admin Padrão
+                Create Default Admin
               </Button>
             </div>
           </CardContent>

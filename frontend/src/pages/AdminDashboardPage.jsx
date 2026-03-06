@@ -559,14 +559,14 @@ export default function AdminDashboardPage() {
       });
       toast.success(`${response.data.imported} products imported!`);
       if (response.data.errors.length > 0) {
-        toast.warning(`${response.data.errors.length} erros durante importação`);
+        toast.warning(`${response.data.errors.length} errors during import`);
       }
       setShowBulkImport(false);
       setImportFile(null);
       fetchProducts(1);
       fetchStats();
     } catch (error) {
-      toast.error(error.response?.data?.detail || "Erro na importação");
+      toast.error(error.response?.data?.detail || "Import error");
     } finally {
       setImporting(false);
     }
@@ -584,7 +584,7 @@ export default function AdminDashboardPage() {
               <img src={LOGO_URL} alt="FREMAX" className="h-8 md:h-10" />
             </Link>
             <span className="font-heading text-lg text-white uppercase hidden md:block">
-              Painel Administrativo
+              Admin Panel
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -592,7 +592,7 @@ export default function AdminDashboardPage() {
               to="/"
               className="text-neutral-400 hover:text-white transition-colors font-mono text-sm"
             >
-              Ver Catálogo
+              View Catalog
             </Link>
             <Button 
               variant="ghost" 
@@ -610,29 +610,35 @@ export default function AdminDashboardPage() {
       <main className="max-w-7xl mx-auto px-6 py-8">
         {/* Stats */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
             <StatCard 
-              title="Total de Produtos" 
+              title="Total Products" 
               value={stats.total_products} 
               icon={Package}
             />
             <StatCard 
-              title="Discos" 
+              title="Discs" 
               value={stats.by_product_line?.disc || 0} 
               icon={Disc}
               color="text-blue-400"
             />
             <StatCard 
-              title="Pastilhas" 
+              title="Pads" 
               value={stats.by_product_line?.pad || 0} 
               icon={LayoutGrid}
               color="text-green-400"
             />
             <StatCard 
-              title="Novos" 
+              title="New" 
               value={stats.by_status?.new || 0} 
               icon={BarChart3}
               color="text-[#FF5F1F]"
+            />
+            <StatCard 
+              title="Not Found Codes" 
+              value={stats.not_found_codes || 0} 
+              icon={AlertCircle}
+              color="text-red-400"
             />
           </div>
         )}
@@ -643,7 +649,7 @@ export default function AdminDashboardPage() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
               <Input
-                placeholder="Buscar produtos..."
+                placeholder="Search products..."
                 className="pl-10 bg-[#121212] border-[#27272A]"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -653,15 +659,15 @@ export default function AdminDashboardPage() {
             </div>
             <Select value={filterLine} onValueChange={(v) => { setFilterLine(v); }}>
               <SelectTrigger className="w-40 bg-[#121212] border-[#27272A]">
-                <SelectValue placeholder="Linha" />
+                <SelectValue placeholder="Line" />
               </SelectTrigger>
               <SelectContent className="bg-[#121212] border-[#27272A]">
-                <SelectItem value="all">Todas</SelectItem>
-                <SelectItem value="disc">Discos</SelectItem>
-                <SelectItem value="drum">Tambores</SelectItem>
-                <SelectItem value="pad">Pastilhas</SelectItem>
-                <SelectItem value="shoe">Sapatas</SelectItem>
-                <SelectItem value="caliper">Pinças</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="disc">Discs</SelectItem>
+                <SelectItem value="drum">Drums</SelectItem>
+                <SelectItem value="pad">Pads</SelectItem>
+                <SelectItem value="shoe">Shoes</SelectItem>
+                <SelectItem value="caliper">Calipers</SelectItem>
               </SelectContent>
             </Select>
             <Select value={filterStatus} onValueChange={(v) => { setFilterStatus(v); }}>
@@ -669,15 +675,15 @@ export default function AdminDashboardPage() {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent className="bg-[#121212] border-[#27272A]">
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="developed">Desenvolvido</SelectItem>
-                <SelectItem value="not_developed">Não Desenvolvido</SelectItem>
-                <SelectItem value="in_development">Em Desenvolvimento</SelectItem>
-                <SelectItem value="new">Novo</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="developed">Developed</SelectItem>
+                <SelectItem value="not_developed">Not Developed</SelectItem>
+                <SelectItem value="in_development">In Development</SelectItem>
+                <SelectItem value="new">New</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={() => fetchProducts(1)} className="bg-[#121212] border border-[#27272A]">
-              Filtrar
+              Filter
             </Button>
           </div>
           <div className="flex gap-2">
@@ -685,16 +691,16 @@ export default function AdminDashboardPage() {
               <DialogTrigger asChild>
                 <Button variant="outline" className="border-[#27272A]" data-testid="bulk-import-button">
                   <Upload className="w-4 h-4 mr-2" />
-                  Importar
+                  Import
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-[#121212] border-[#27272A] max-w-md">
                 <DialogHeader>
-                  <DialogTitle className="font-heading text-white uppercase">Importação em Massa</DialogTitle>
+                  <DialogTitle className="font-heading text-white uppercase">Bulk Import</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <p className="text-neutral-400 text-sm">
-                    Faça upload de um arquivo JSON ou CSV com os produtos.
+                    Upload a JSON or CSV file with products.
                   </p>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-[#09090B] border border-[#27272A] p-4 rounded text-center">
@@ -715,7 +721,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <DialogFooter>
                   <DialogClose asChild>
-                    <Button variant="outline" className="border-[#27272A]">Cancelar</Button>
+                    <Button variant="outline" className="border-[#27272A]">Cancel</Button>
                   </DialogClose>
                   <Button 
                     className="bg-[#FFB800] text-black hover:bg-[#F59E0B]"
@@ -724,7 +730,7 @@ export default function AdminDashboardPage() {
                     data-testid="confirm-import-button"
                   >
                     {importing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                    Importar
+                    Import
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -734,12 +740,12 @@ export default function AdminDashboardPage() {
               <DialogTrigger asChild>
                 <Button className="bg-[#FFB800] text-black hover:bg-[#F59E0B]" data-testid="add-product-button">
                   <Plus className="w-4 h-4 mr-2" />
-                  Novo Produto
+                  New Product
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-[#121212] border-[#27272A] max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle className="font-heading text-white uppercase">Novo Produto</DialogTitle>
+                  <DialogTitle className="font-heading text-white uppercase">New Product</DialogTitle>
                 </DialogHeader>
                 <ProductForm onSave={handleCreateProduct} onClose={() => setShowAddProduct(false)} />
               </DialogContent>
@@ -755,8 +761,8 @@ export default function AdminDashboardPage() {
         ) : products.length === 0 ? (
           <div className="text-center py-20 bg-[#121212] border border-[#27272A]">
             <Package className="w-16 h-16 text-[#27272A] mx-auto mb-4" />
-            <h2 className="font-heading text-2xl text-white uppercase mb-2">Nenhum produto encontrado</h2>
-            <p className="text-neutral-500 mb-6">Adicione produtos ou ajuste os filtros</p>
+            <h2 className="font-heading text-2xl text-white uppercase mb-2">No products found</h2>
+            <p className="text-neutral-500 mb-6">Add products or adjust filters</p>
           </div>
         ) : (
           <div className="bg-[#121212] border border-[#27272A] overflow-hidden">
@@ -764,10 +770,10 @@ export default function AdminDashboardPage() {
               <thead>
                 <tr className="border-b border-[#27272A]">
                   <th className="text-left py-4 px-4 text-neutral-500 font-mono text-xs uppercase">Part Number</th>
-                  <th className="text-left py-4 px-4 text-neutral-500 font-mono text-xs uppercase">Linha</th>
-                  <th className="text-left py-4 px-4 text-neutral-500 font-mono text-xs uppercase hidden md:table-cell">Descrição</th>
+                  <th className="text-left py-4 px-4 text-neutral-500 font-mono text-xs uppercase">Line</th>
+                  <th className="text-left py-4 px-4 text-neutral-500 font-mono text-xs uppercase hidden md:table-cell">Description</th>
                   <th className="text-left py-4 px-4 text-neutral-500 font-mono text-xs uppercase">Status</th>
-                  <th className="text-right py-4 px-4 text-neutral-500 font-mono text-xs uppercase">Ações</th>
+                  <th className="text-right py-4 px-4 text-neutral-500 font-mono text-xs uppercase">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -842,7 +848,7 @@ export default function AdminDashboardPage() {
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-6">
             <span className="text-neutral-500 font-mono text-sm">
-              {total} produto{total !== 1 ? "s" : ""} encontrado{total !== 1 ? "s" : ""}
+              {total} product{total !== 1 ? "s" : ""} found
             </span>
             <div className="flex items-center gap-4">
               <Button
@@ -852,10 +858,10 @@ export default function AdminDashboardPage() {
                 onClick={() => fetchProducts(currentPage - 1)}
               >
                 <ChevronLeft className="w-4 h-4 mr-1" />
-                Anterior
+                Previous
               </Button>
               <span className="font-mono text-neutral-400">
-                Página {currentPage} de {totalPages}
+                Page {currentPage} of {totalPages}
               </span>
               <Button
                 variant="outline"
@@ -863,7 +869,7 @@ export default function AdminDashboardPage() {
                 disabled={currentPage === totalPages}
                 onClick={() => fetchProducts(currentPage + 1)}
               >
-                Próxima
+                Next
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>

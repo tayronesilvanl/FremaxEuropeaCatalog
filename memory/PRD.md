@@ -11,6 +11,13 @@ Create a product catalog website for FREMAX automotive brake parts. Features inc
 - Admin area for product import (individual or bulk) - protected
 - Public catalog without customer login
 
+## User Requirements Added
+- English language interface
+- Admin link hidden from public (access via /admin/login only)
+- "Open Datasheet" button that opens dedicated print-friendly page
+- Related products section showing items with common applications
+- Not found codes tracking system for admin visibility
+
 ## Architecture
 - **Frontend**: React + Tailwind CSS + Shadcn/UI
 - **Backend**: FastAPI + Motor (async MongoDB)
@@ -19,7 +26,7 @@ Create a product catalog website for FREMAX automotive brake parts. Features inc
 
 ## User Personas
 1. **B2B Customer/Mechanic**: Searches products by code/cross-reference/measurements, views datasheets
-2. **Admin**: Manages products, imports bulk data, controls product status
+2. **Admin**: Manages products, imports bulk data, controls product status, monitors customer demand
 
 ## Core Requirements (Static)
 - [x] Public product search without login
@@ -29,16 +36,25 @@ Create a product catalog website for FREMAX automotive brake parts. Features inc
 - [x] Product CRUD operations
 - [x] Bulk import (JSON/CSV)
 - [x] Product status management
+- [x] Related products (common applications)
+- [x] Not found codes tracking
 
 ## What's Been Implemented (2026-03-06)
-- Complete FastAPI backend with 20+ endpoints
-- MongoDB models for products, applications, cross-references
+- Complete FastAPI backend with 25+ endpoints
+- MongoDB models for products, applications, cross-references, not found codes
 - JWT authentication for admin
-- React frontend with dark FREMAX theme
+- React frontend with dark FREMAX theme (English)
 - Search pages with multiple filter types
 - Product datasheet with tabs (specs, applications, cross-refs, logistics)
+- Dedicated print-friendly datasheet page (/datasheet/:id)
+- Related products section on product page
 - Admin dashboard with stats and product management
+- Not found codes tracking and admin visibility
 - Bulk import functionality
+
+## Admin Access
+- URL: /admin/login
+- Credentials: admin / admin123
 
 ## Prioritized Backlog
 
@@ -47,6 +63,8 @@ Create a product catalog website for FREMAX automotive brake parts. Features inc
 - ✅ Product datasheet
 - ✅ Admin authentication
 - ✅ Product CRUD
+- ✅ Related products
+- ✅ Not found codes tracking
 
 ### P1 (High)
 - [ ] PDF export of datasheet
