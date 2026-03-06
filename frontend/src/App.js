@@ -7,6 +7,8 @@ import ProductDatasheetPage from "@/pages/ProductDatasheetPage";
 import DatasheetPrintPage from "@/pages/DatasheetPrintPage";
 import AdminLoginPage from "@/pages/AdminLoginPage";
 import AdminDashboardPage from "@/pages/AdminDashboardPage";
+import AdminProductDetailPage from "@/pages/AdminProductDetailPage";
+import AdminBulkImportPage from "@/pages/AdminBulkImportPage";
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
           <Route path="/datasheet/:id" element={<DatasheetPrintPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
           <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/product/:id" element={<AdminProductDetailPage />} />
+          <Route path="/admin/import" element={<AdminBulkImportPage />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors />

@@ -687,69 +687,19 @@ export default function AdminDashboardPage() {
             </Button>
           </div>
           <div className="flex gap-2">
-            <Dialog open={showBulkImport} onOpenChange={setShowBulkImport}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="border-[#27272A]" data-testid="bulk-import-button">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Import
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-[#121212] border-[#27272A] max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="font-heading text-white uppercase">Bulk Import</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <p className="text-neutral-400 text-sm">
-                    Upload a JSON or CSV file with products.
-                  </p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-[#09090B] border border-[#27272A] p-4 rounded text-center">
-                      <FileJson className="w-8 h-8 text-[#FFB800] mx-auto mb-2" />
-                      <span className="text-xs text-neutral-400 font-mono">JSON</span>
-                    </div>
-                    <div className="bg-[#09090B] border border-[#27272A] p-4 rounded text-center">
-                      <FileSpreadsheet className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                      <span className="text-xs text-neutral-400 font-mono">CSV</span>
-                    </div>
-                  </div>
-                  <Input
-                    type="file"
-                    accept=".json,.csv"
-                    onChange={(e) => setImportFile(e.target.files[0])}
-                    className="bg-[#09090B] border-[#27272A]"
-                  />
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline" className="border-[#27272A]">Cancel</Button>
-                  </DialogClose>
-                  <Button 
-                    className="bg-[#FFB800] text-black hover:bg-[#F59E0B]"
-                    onClick={handleBulkImport}
-                    disabled={importing}
-                    data-testid="confirm-import-button"
-                  >
-                    {importing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                    Import
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+            <Link to="/admin/import">
+              <Button variant="outline" className="border-[#27272A]" data-testid="bulk-import-button">
+                <Upload className="w-4 h-4 mr-2" />
+                Import
+              </Button>
+            </Link>
 
-            <Dialog open={showAddProduct} onOpenChange={setShowAddProduct}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#FFB800] text-black hover:bg-[#F59E0B]" data-testid="add-product-button">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Product
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-[#121212] border-[#27272A] max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle className="font-heading text-white uppercase">New Product</DialogTitle>
-                </DialogHeader>
-                <ProductForm onSave={handleCreateProduct} onClose={() => setShowAddProduct(false)} />
-              </DialogContent>
-            </Dialog>
+            <Link to="/admin/product/new">
+              <Button className="bg-[#FFB800] text-black hover:bg-[#F59E0B]" data-testid="add-product-button">
+                <Plus className="w-4 h-4 mr-2" />
+                New Product
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -782,8 +732,9 @@ export default function AdminDashboardPage() {
                   return (
                     <tr 
                       key={product.id} 
-                      className="border-b border-[#27272A] hover:bg-[#18181B] transition-colors"
+                      className="border-b border-[#27272A] hover:bg-[#18181B] transition-colors cursor-pointer"
                       data-testid={`admin-product-row-${product.part_number}`}
+                      onClick={() => navigate(`/admin/product/${product.id}`)}
                     >
                       <td className="py-4 px-4">
                         <span className="font-mono text-white font-semibold">{product.part_number}</span>
@@ -804,33 +755,17 @@ export default function AdminDashboardPage() {
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center justify-end gap-2">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => setEditingProduct(product)}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="bg-[#121212] border-[#27272A] max-w-2xl">
-                              <DialogHeader>
-                                <DialogTitle className="font-heading text-white uppercase">Editar Produto</DialogTitle>
-                              </DialogHeader>
-                              {editingProduct && (
-                                <ProductForm 
-                                  product={editingProduct} 
-                                  onSave={handleUpdateProduct} 
-                                  onClose={() => setEditingProduct(null)} 
-                                />
-                              )}
-                            </DialogContent>
-                          </Dialog>
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            onClick={() => handleDeleteProduct(product.id)}
+                            onClick={(e) => { e.stopPropagation(); navigate(`/admin/product/${product.id}`); }}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product.id); }}
                           >
                             <Trash2 className="w-4 h-4 text-red-500" />
                           </Button>

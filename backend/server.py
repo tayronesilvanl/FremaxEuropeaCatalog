@@ -62,38 +62,58 @@ class CrossReference(BaseModel):
 
 class MeasurementsDisc(BaseModel):
     outer_diameter: Optional[float] = None
-    height: Optional[float] = None
     thickness: Optional[float] = None
+    minimum_thickness: Optional[float] = None
+    height: Optional[float] = None
     center_hole: Optional[float] = None
     quantity_holes: Optional[int] = None
     pcd: Optional[float] = None  # Pitch Circle Diameter
+    disc_type: Optional[str] = None  # Solid, Internally ventilated, Externally ventilated
+    drilled: Optional[bool] = None
+    slotted: Optional[bool] = None
+    fitting_position: Optional[str] = None  # Front/Rear/Front Left/Front Right/Rear Left/Rear Right
+    disc_drum: Optional[bool] = None
+    paired_part_number: Optional[str] = None
 
 class MeasurementsPad(BaseModel):
     width: Optional[float] = None
     height: Optional[float] = None
     thickness: Optional[float] = None
+    acoustic_wear_warning: Optional[bool] = None
+    electronic_wear_sensor: Optional[bool] = None
+    extra_components_included: Optional[bool] = None
 
 class MeasurementsDrum(BaseModel):
     outer_diameter: Optional[float] = None
     inner_diameter: Optional[float] = None
+    maximum_diameter: Optional[float] = None
     height: Optional[float] = None
+    offset: Optional[float] = None
+    inner_hole: Optional[float] = None
+    quantity_holes: Optional[int] = None
+    fitting_position: Optional[str] = None
 
 class MeasurementsShoe(BaseModel):
-    width: Optional[float] = None
-    radius: Optional[float] = None
     thickness: Optional[float] = None
+    drum_diameter: Optional[float] = None
+    width: Optional[float] = None
 
 class MeasurementsCaliper(BaseModel):
-    piston_diameter: Optional[float] = None
-    position: Optional[str] = None  # front/rear, left/right
+    piston_size: Optional[float] = None
+    fitting_position: Optional[str] = None  # Front/Rear/Front Left/Front Right/Rear Left/Rear Right
+    electronic_brake_caliper: Optional[bool] = None
+    paired_part_number: Optional[str] = None
 
 class LogisticsInfo(BaseModel):
     weight_kg: Optional[float] = None
+    gross_weight_kg: Optional[float] = None
     packaging_width: Optional[float] = None
     packaging_height: Optional[float] = None
     packaging_depth: Optional[float] = None
     ean_code: Optional[str] = None
     ncm: Optional[str] = None
+    vpe: Optional[int] = None  # Quantity per package
+    country_of_origin: Optional[str] = None
 
 class ProductBase(BaseModel):
     part_number: str
@@ -598,6 +618,305 @@ async def bulk_import_products(file: UploadFile = File(...), username: str = Dep
         "errors": errors,
         "total": len(products_to_import)
     }
+
+# ========== SEPARATE BULK IMPORTS ==========
+
+@api_router.post("/admin/bulk/applications")
+async def bulk_import_applications(file: UploadFile = File(...), username: str = Depends(verify_token)):
+    """Import applications from CSV: part_number, brand, model, year_from, year_to"""
+    content = await file.read()
+    
+    imported_count = 0
+    errors = []
+    
+    try:
+        csv_content = content.decode('utf-8')
+        reader = csv.DictReader(io.StringIO(csv_content))
+        
+        for row in reader:
+            part_number = row.get("part_number", "").upper().strip()
+            if not part_number:
+                continue
+            
+            application = {
+                "brand": row.get("brand", "").strip(),
+                "model": row.get("model", "").strip(),
+                "year_from": int(row.get("year_from", 0)),
+                "year_to": int(row.get("year_to", 0))
+            }
+            
+            if not application["brand"] or not application["model"]:
+                errors.append({"part_number": part_number, "error": "Missing brand or model"})
+                continue
+            
+            # Add application to product
+            result = await db.products.update_one(
+                {"part_number": part_number},
+                {"$addToSet": {"applications": application}, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            
+            if result.matched_count > 0:
+                imported_count += 1
+            else:
+                errors.append({"part_number": part_number, "error": "Product not found"})
+                
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error parsing file: {str(e)}")
+    
+    return {"imported": imported_count, "errors": errors}
+
+@api_router.post("/admin/bulk/cross-references")
+async def bulk_import_cross_references(file: UploadFile = File(...), username: str = Depends(verify_token)):
+    """Import cross references from CSV: part_number, manufacturer, code"""
+    content = await file.read()
+    
+    imported_count = 0
+    errors = []
+    
+    try:
+        csv_content = content.decode('utf-8')
+        reader = csv.DictReader(io.StringIO(csv_content))
+        
+        for row in reader:
+            part_number = row.get("part_number", "").upper().strip()
+            if not part_number:
+                continue
+            
+            cross_ref = {
+                "manufacturer": row.get("manufacturer", "").strip(),
+                "code": row.get("code", "").upper().strip()
+            }
+            
+            if not cross_ref["manufacturer"] or not cross_ref["code"]:
+                errors.append({"part_number": part_number, "error": "Missing manufacturer or code"})
+                continue
+            
+            # Add cross reference to product
+            result = await db.products.update_one(
+                {"part_number": part_number},
+                {"$addToSet": {"cross_references": cross_ref}, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            
+            if result.matched_count > 0:
+                imported_count += 1
+            else:
+                errors.append({"part_number": part_number, "error": "Product not found"})
+                
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error parsing file: {str(e)}")
+    
+    return {"imported": imported_count, "errors": errors}
+
+@api_router.post("/admin/bulk/measurements")
+async def bulk_import_measurements(file: UploadFile = File(...), username: str = Depends(verify_token)):
+    """Import measurements from CSV: part_number + measurement columns"""
+    content = await file.read()
+    
+    imported_count = 0
+    errors = []
+    
+    # Measurement fields by product line
+    disc_fields = ["outer_diameter", "thickness", "minimum_thickness", "height", "center_hole", 
+                   "quantity_holes", "pcd", "disc_type", "drilled", "slotted", "fitting_position", 
+                   "disc_drum", "paired_part_number"]
+    pad_fields = ["width", "height", "thickness", "acoustic_wear_warning", 
+                  "electronic_wear_sensor", "extra_components_included"]
+    drum_fields = ["outer_diameter", "inner_diameter", "maximum_diameter", "height", 
+                   "offset", "inner_hole", "quantity_holes", "fitting_position"]
+    shoe_fields = ["thickness", "drum_diameter", "width"]
+    caliper_fields = ["piston_size", "fitting_position", "electronic_brake_caliper", "paired_part_number"]
+    
+    all_fields = set(disc_fields + pad_fields + drum_fields + shoe_fields + caliper_fields)
+    
+    try:
+        csv_content = content.decode('utf-8')
+        reader = csv.DictReader(io.StringIO(csv_content))
+        
+        for row in reader:
+            part_number = row.get("part_number", "").upper().strip()
+            if not part_number:
+                continue
+            
+            measurements = {}
+            for field in all_fields:
+                value = row.get(field, "").strip()
+                if value:
+                    # Convert to appropriate type
+                    if field in ["drilled", "slotted", "disc_drum", "acoustic_wear_warning", 
+                                "electronic_wear_sensor", "extra_components_included", "electronic_brake_caliper"]:
+                        measurements[field] = value.lower() in ["yes", "true", "1", "sim"]
+                    elif field in ["quantity_holes"]:
+                        measurements[field] = int(value)
+                    elif field in ["disc_type", "fitting_position", "paired_part_number"]:
+                        measurements[field] = value
+                    else:
+                        try:
+                            measurements[field] = float(value)
+                        except ValueError:
+                            measurements[field] = value
+            
+            if not measurements:
+                continue
+            
+            # Update product measurements
+            result = await db.products.update_one(
+                {"part_number": part_number},
+                {"$set": {"measurements": measurements, "updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            
+            if result.matched_count > 0:
+                imported_count += 1
+            else:
+                errors.append({"part_number": part_number, "error": "Product not found"})
+                
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error parsing file: {str(e)}")
+    
+    return {"imported": imported_count, "errors": errors}
+
+@api_router.post("/admin/bulk/logistics")
+async def bulk_import_logistics(file: UploadFile = File(...), username: str = Depends(verify_token)):
+    """Import logistics from CSV: part_number, weight_kg, gross_weight_kg, ean_code, ncm, vpe, etc."""
+    content = await file.read()
+    
+    imported_count = 0
+    errors = []
+    
+    logistics_fields = ["weight_kg", "gross_weight_kg", "packaging_width", "packaging_height", 
+                       "packaging_depth", "ean_code", "ncm", "vpe", "country_of_origin"]
+    
+    try:
+        csv_content = content.decode('utf-8')
+        reader = csv.DictReader(io.StringIO(csv_content))
+        
+        for row in reader:
+            part_number = row.get("part_number", "").upper().strip()
+            if not part_number:
+                continue
+            
+            logistics = {}
+            for field in logistics_fields:
+                value = row.get(field, "").strip()
+                if value:
+                    if field in ["weight_kg", "gross_weight_kg", "packaging_width", "packaging_height", "packaging_depth"]:
+                        logistics[field] = float(value)
+                    elif field == "vpe":
+                        logistics[field] = int(value)
+                    else:
+                        logistics[field] = value
+            
+            if not logistics:
+                continue
+            
+            # Update product logistics
+            result = await db.products.update_one(
+                {"part_number": part_number},
+                {"$set": {"logistics": logistics, "updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            
+            if result.matched_count > 0:
+                imported_count += 1
+            else:
+                errors.append({"part_number": part_number, "error": "Product not found"})
+                
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error parsing file: {str(e)}")
+    
+    return {"imported": imported_count, "errors": errors}
+
+# ========== PRODUCT SPECIFIC DATA ENDPOINTS ==========
+
+@api_router.put("/admin/products/{product_id}/applications")
+async def update_product_applications(product_id: str, applications: List[Application], username: str = Depends(verify_token)):
+    """Replace all applications for a product"""
+    apps_list = [app.model_dump() for app in applications]
+    result = await db.products.update_one(
+        {"id": product_id},
+        {"$set": {"applications": apps_list, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Applications updated", "count": len(apps_list)}
+
+@api_router.post("/admin/products/{product_id}/applications")
+async def add_product_application(product_id: str, application: Application, username: str = Depends(verify_token)):
+    """Add a single application to a product"""
+    result = await db.products.update_one(
+        {"id": product_id},
+        {"$addToSet": {"applications": application.model_dump()}, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Application added"}
+
+@api_router.delete("/admin/products/{product_id}/applications")
+async def remove_product_application(product_id: str, brand: str, model: str, year_from: int, year_to: int, username: str = Depends(verify_token)):
+    """Remove a specific application from a product"""
+    result = await db.products.update_one(
+        {"id": product_id},
+        {"$pull": {"applications": {"brand": brand, "model": model, "year_from": year_from, "year_to": year_to}},
+         "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Application removed"}
+
+@api_router.put("/admin/products/{product_id}/cross-references")
+async def update_product_cross_references(product_id: str, cross_references: List[CrossReference], username: str = Depends(verify_token)):
+    """Replace all cross references for a product"""
+    refs_list = [ref.model_dump() for ref in cross_references]
+    result = await db.products.update_one(
+        {"id": product_id},
+        {"$set": {"cross_references": refs_list, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Cross references updated", "count": len(refs_list)}
+
+@api_router.post("/admin/products/{product_id}/cross-references")
+async def add_product_cross_reference(product_id: str, cross_ref: CrossReference, username: str = Depends(verify_token)):
+    """Add a single cross reference to a product"""
+    result = await db.products.update_one(
+        {"id": product_id},
+        {"$addToSet": {"cross_references": cross_ref.model_dump()}, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Cross reference added"}
+
+@api_router.delete("/admin/products/{product_id}/cross-references")
+async def remove_product_cross_reference(product_id: str, manufacturer: str, code: str, username: str = Depends(verify_token)):
+    """Remove a specific cross reference from a product"""
+    result = await db.products.update_one(
+        {"id": product_id},
+        {"$pull": {"cross_references": {"manufacturer": manufacturer, "code": code}},
+         "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Cross reference removed"}
+
+@api_router.put("/admin/products/{product_id}/measurements")
+async def update_product_measurements(product_id: str, measurements: Dict[str, Any], username: str = Depends(verify_token)):
+    """Update measurements for a product"""
+    result = await db.products.update_one(
+        {"id": product_id},
+        {"$set": {"measurements": measurements, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Measurements updated"}
+
+@api_router.put("/admin/products/{product_id}/logistics")
+async def update_product_logistics(product_id: str, logistics: LogisticsInfo, username: str = Depends(verify_token)):
+    """Update logistics for a product"""
+    result = await db.products.update_one(
+        {"id": product_id},
+        {"$set": {"logistics": logistics.model_dump(), "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Logistics updated"}
 
 @api_router.get("/admin/products", response_model=PaginatedResponse)
 async def admin_get_products(
