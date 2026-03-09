@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 
 class AdminEnhancementTester:
-    def __init__(self, base_url="https://product-datasheet.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://parts-preview-1.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.token = None
         self.tests_run = 0

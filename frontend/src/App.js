@@ -1,5 +1,5 @@
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import HomePage from "@/pages/HomePage";
 import SearchResultsPage from "@/pages/SearchResultsPage";
@@ -13,7 +13,7 @@ import AdminBulkImportPage from "@/pages/AdminBulkImportPage";
 function App() {
   return (
     <div className="App min-h-screen bg-[#0A0A0A]">
-      <BrowserRouter>
+      <HashRouter>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/search" element={<SearchResultsPage />} />
@@ -24,7 +24,7 @@ function App() {
           <Route path="/admin/product/:id" element={<AdminProductDetailPage />} />
           <Route path="/admin/import" element={<AdminBulkImportPage />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
       <Toaster position="top-right" richColors />
     </div>
   );
