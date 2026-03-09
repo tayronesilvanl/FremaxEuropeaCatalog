@@ -42,19 +42,6 @@ export default function AdminLoginPage() {
     }
   };
 
-  const setupAdmin = async () => {
-    try {
-      const response = await axios.post(`${API}/admin/setup`);
-      toast.success(`Admin created! User: ${response.data.username}, Password: ${response.data.password}`);
-    } catch (error) {
-      if (error.response?.data?.message === "Admin already exists") {
-        toast.info("Admin already exists. Use: admin / admin123");
-      } else {
-        toast.error("Error creating admin");
-      }
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#0A0A0A] flex flex-col">
       {/* Header */}
@@ -138,20 +125,6 @@ export default function AdminLoginPage() {
                 )}
               </Button>
             </form>
-
-            <div className="mt-6 pt-6 border-t border-[#27272A]">
-              <p className="text-neutral-500 text-xs font-mono text-center mb-4">
-                First access? Click below to create default admin.
-              </p>
-              <Button
-                variant="outline"
-                className="w-full border-[#27272A] text-neutral-400 hover:text-white"
-                onClick={setupAdmin}
-                data-testid="setup-admin-button"
-              >
-                Create Default Admin
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </main>

@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { 
   LogOut, Plus, Upload, Search, Trash2, Edit, Loader2, 
   Disc, CircleDot, LayoutGrid, Wrench, Settings2,
-  Package, BarChart3, ChevronLeft, ChevronRight, X, FileJson, FileSpreadsheet, AlertCircle
+  Package, BarChart3, ChevronLeft, ChevronRight, X, FileJson, FileSpreadsheet, AlertCircle,
+  KeyRound
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -459,6 +460,9 @@ export default function AdminDashboardPage() {
   const [showBulkImport, setShowBulkImport] = useState(false);
   const [importFile, setImportFile] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ current_password: "", new_password: "", confirm_password: "" });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const token = localStorage.getItem("admin_token");
 
@@ -574,6 +578,35 @@ export default function AdminDashboardPage() {
 
   if (!token) return null;
 
+  const handleChangePassword = async () => {
+    if (!passwordForm.current_password || !passwordForm.new_password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+    if (passwordForm.new_password !== passwordForm.confirm_password) {
+      toast.error("New passwords do not match");
+      return;
+    }
+    if (passwordForm.new_password.length < 6) {
+      toast.error("New password must be at least 6 characters");
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      await axiosAuth.post(`${API}/admin/change-password`, {
+        current_password: passwordForm.current_password,
+        new_password: passwordForm.new_password,
+      });
+      toast.success("Password changed successfully!");
+      setShowChangePassword(false);
+      setPasswordForm({ current_password: "", new_password: "", confirm_password: "" });
+    } catch (error) {
+      toast.error(error.response?.data?.detail || "Error changing password");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
       {/* Header */}
@@ -597,11 +630,20 @@ export default function AdminDashboardPage() {
             <Button 
               variant="ghost" 
               className="text-neutral-400 hover:text-white"
+              onClick={() => setShowChangePassword(true)}
+              data-testid="change-password-button"
+            >
+              <KeyRound className="w-4 h-4 mr-2" />
+              Password
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="text-neutral-400 hover:text-white"
               onClick={handleLogout}
               data-testid="logout-button"
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Sair
+              Logout
             </Button>
           </div>
         </div>
@@ -811,6 +853,64 @@ export default function AdminDashboardPage() {
           </div>
         )}
       </main>
+
+      {/* Change Password Dialog */}
+      <Dialog open={showChangePassword} onOpenChange={setShowChangePassword}>
+        <DialogContent className="bg-[#121212] border-[#27272A] max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-white uppercase">Change Password</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-neutral-400 font-mono text-xs">CURRENT PASSWORD</Label>
+              <Input
+                type="password"
+                value={passwordForm.current_password}
+                onChange={(e) => setPasswordForm(p => ({ ...p, current_password: e.target.value }))}
+                className="bg-[#09090B] border-[#27272A]"
+                placeholder="Enter current password"
+                data-testid="current-password-input"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-neutral-400 font-mono text-xs">NEW PASSWORD</Label>
+              <Input
+                type="password"
+                value={passwordForm.new_password}
+                onChange={(e) => setPasswordForm(p => ({ ...p, new_password: e.target.value }))}
+                className="bg-[#09090B] border-[#27272A]"
+                placeholder="At least 6 characters"
+                data-testid="new-password-input"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-neutral-400 font-mono text-xs">CONFIRM NEW PASSWORD</Label>
+              <Input
+                type="password"
+                value={passwordForm.confirm_password}
+                onChange={(e) => setPasswordForm(p => ({ ...p, confirm_password: e.target.value }))}
+                className="bg-[#09090B] border-[#27272A]"
+                placeholder="Repeat new password"
+                data-testid="confirm-password-input"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" className="border-[#27272A]" onClick={() => setShowChangePassword(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-[#FFB800] text-black hover:bg-[#F59E0B]"
+              onClick={handleChangePassword}
+              disabled={changingPassword}
+              data-testid="submit-change-password"
+            >
+              {changingPassword ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Change Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

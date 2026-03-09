@@ -459,20 +459,28 @@ async def admin_login(data: AdminLogin):
     token = create_token(data.username)
     return TokenResponse(access_token=token)
 
-@api_router.post("/admin/setup")
-async def admin_setup():
-    """Create default admin if not exists"""
-    existing = await db.admins.find_one({"username": "admin"})
-    if existing:
-        return {"message": "Admin already exists"}
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+@api_router.post("/admin/change-password")
+async def admin_change_password(data: ChangePasswordRequest, username: str = Depends(verify_token)):
+    """Change admin password"""
+    admin = await db.admins.find_one({"username": username})
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
     
-    admin = {
-        "username": "admin",
-        "password": hash_password("admin123"),
-        "created_at": datetime.now(timezone.utc).isoformat()
-    }
-    await db.admins.insert_one(admin)
-    return {"message": "Admin created", "username": "admin", "password": "admin123"}
+    if not verify_password(data.current_password, admin["password"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    
+    if len(data.new_password) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters")
+    
+    await db.admins.update_one(
+        {"username": username},
+        {"$set": {"password": hash_password(data.new_password)}}
+    )
+    return {"message": "Password changed successfully"}
 
 @api_router.post("/admin/products", response_model=Product)
 async def create_product(product: ProductCreate, username: str = Depends(verify_token)):
@@ -1023,6 +1031,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup_seed_admin():
+    """Create default admin if not exists"""
+    existing = await db.admins.find_one({"username": "admin"})
+    if not existing:
+        admin = {
+            "username": "admin",
+            "password": hash_password("admin123"),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.admins.insert_one(admin)
+        logger.info("Default admin user created")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
