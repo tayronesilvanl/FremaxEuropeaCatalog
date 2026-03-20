@@ -694,17 +694,17 @@ async def bulk_import_applications(file: UploadFile = File(...), username: str =
         reader = csv.DictReader(io.StringIO(csv_content))
         
         for row in reader:
-            part_number = row.get("part_number", "").upper().strip()
+            part_number = (row.get("part_number") or "").upper().strip()
             if not part_number:
                 continue
             
             application = {
-                "make": row.get("make", "").strip(),
-                "vehicle": row.get("vehicle", "").strip(),
-                "model": row.get("model", "").strip(),
-                "start_year": int(row.get("start_year", 0)) if row.get("start_year", "").strip() else 0,
-                "end_year": int(row.get("end_year")) if row.get("end_year", "").strip() else None,
-                "vehicle_type": row.get("vehicle_type", "").strip()
+                "make": (row.get("make") or "").strip(),
+                "vehicle": (row.get("vehicle") or "").strip(),
+                "model": (row.get("model") or "").strip(),
+                "start_year": int(row.get("start_year", 0)) if (row.get("start_year") or "").strip() else 0,
+                "end_year": int(row.get("end_year")) if (row.get("end_year") or "").strip() else None,
+                "vehicle_type": (row.get("vehicle_type") or "").strip()
             }
             
             if not application["make"] or not application["vehicle"]:
@@ -740,13 +740,13 @@ async def bulk_import_cross_references(file: UploadFile = File(...), username: s
         reader = csv.DictReader(io.StringIO(csv_content))
         
         for row in reader:
-            part_number = row.get("part_number", "").upper().strip()
+            part_number = (row.get("part_number") or "").upper().strip()
             if not part_number:
                 continue
             
             cross_ref = {
-                "manufacturer": row.get("manufacturer", "").strip(),
-                "code": row.get("code", "").upper().strip()
+                "manufacturer": (row.get("manufacturer") or "").strip(),
+                "code": (row.get("code") or "").upper().strip()
             }
             
             if not cross_ref["manufacturer"] or not cross_ref["code"]:
@@ -795,13 +795,13 @@ async def bulk_import_measurements(file: UploadFile = File(...), username: str =
         reader = csv.DictReader(io.StringIO(csv_content))
         
         for row in reader:
-            part_number = row.get("part_number", "").upper().strip()
+            part_number = (row.get("part_number") or "").upper().strip()
             if not part_number:
                 continue
             
             measurements = {}
             for field in all_fields:
-                value = row.get(field, "").strip()
+                value = (row.get(field) or "").strip()
                 if value:
                     # Convert to appropriate type
                     if field in ["drilled", "slotted", "disc_drum", "acoustic_wear_warning", 
@@ -852,13 +852,13 @@ async def bulk_import_logistics(file: UploadFile = File(...), username: str = De
         reader = csv.DictReader(io.StringIO(csv_content))
         
         for row in reader:
-            part_number = row.get("part_number", "").upper().strip()
+            part_number = (row.get("part_number") or "").upper().strip()
             if not part_number:
                 continue
             
             logistics = {}
             for field in logistics_fields:
-                value = row.get(field, "").strip()
+                value = (row.get(field) or "").strip()
                 if value:
                     if field in ["weight_kg", "gross_weight_kg", "packaging_width", "packaging_height", "packaging_depth"]:
                         logistics[field] = float(value)
