@@ -16,6 +16,15 @@ import json
 import csv
 import io
 
+def decode_content(content: bytes) -> str:
+    """Decode file content trying utf-8 first, then latin-1"""
+    for encoding in ['utf-8-sig', 'utf-8', 'latin-1', 'cp1252']:
+        try:
+            return content.decode(encoding)
+        except (UnicodeDecodeError, LookupError):
+            continue
+    return content.decode('latin-1')
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
@@ -575,10 +584,10 @@ async def bulk_import_products(file: UploadFile = File(...), username: str = Dep
     
     try:
         if file.filename.endswith('.json'):
-            data = json.loads(content.decode('utf-8'))
+            data = json.loads(decode_content(content))
             products_to_import = data if isinstance(data, list) else [data]
         elif file.filename.endswith('.csv'):
-            csv_content = content.decode('utf-8')
+            csv_content = decode_content(content)
             reader = csv.DictReader(io.StringIO(csv_content))
             for row in reader:
                 # Parse nested fields
@@ -681,7 +690,7 @@ async def bulk_import_applications(file: UploadFile = File(...), username: str =
     errors = []
     
     try:
-        csv_content = content.decode('utf-8')
+        csv_content = decode_content(content)
         reader = csv.DictReader(io.StringIO(csv_content))
         
         for row in reader:
@@ -727,7 +736,7 @@ async def bulk_import_cross_references(file: UploadFile = File(...), username: s
     errors = []
     
     try:
-        csv_content = content.decode('utf-8')
+        csv_content = decode_content(content)
         reader = csv.DictReader(io.StringIO(csv_content))
         
         for row in reader:
@@ -782,7 +791,7 @@ async def bulk_import_measurements(file: UploadFile = File(...), username: str =
     all_fields = set(disc_fields + pad_fields + drum_fields + shoe_fields + caliper_fields)
     
     try:
-        csv_content = content.decode('utf-8')
+        csv_content = decode_content(content)
         reader = csv.DictReader(io.StringIO(csv_content))
         
         for row in reader:
@@ -839,7 +848,7 @@ async def bulk_import_logistics(file: UploadFile = File(...), username: str = De
                        "packaging_depth", "ean_code", "ncm", "vpe", "country_of_origin"]
     
     try:
-        csv_content = content.decode('utf-8')
+        csv_content = decode_content(content)
         reader = csv.DictReader(io.StringIO(csv_content))
         
         for row in reader:
