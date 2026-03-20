@@ -59,7 +59,7 @@ export default function AdminProductDetailPage() {
   });
   
   // New application form
-  const [newApp, setNewApp] = useState({ brand: "", model: "", year_from: "", year_to: "" });
+  const [newApp, setNewApp] = useState({ make: "", vehicle: "", model: "", start_year: "", end_year: "", vehicle_type: "" });
   // New cross reference form
   const [newRef, setNewRef] = useState({ manufacturer: "", code: "" });
 
@@ -116,19 +116,21 @@ export default function AdminProductDetailPage() {
 
   // Applications
   const addApplication = () => {
-    if (newApp.brand && newApp.model && newApp.year_from && newApp.year_to) {
+    if (newApp.make && newApp.vehicle && newApp.start_year) {
       setProduct(prev => ({
         ...prev,
         applications: [...prev.applications, {
-          brand: newApp.brand,
-          model: newApp.model,
-          year_from: parseInt(newApp.year_from),
-          year_to: parseInt(newApp.year_to)
+          make: newApp.make,
+          vehicle: newApp.vehicle,
+          model: newApp.model || "",
+          start_year: parseInt(newApp.start_year),
+          end_year: newApp.end_year ? parseInt(newApp.end_year) : null,
+          vehicle_type: newApp.vehicle_type || ""
         }]
       }));
-      setNewApp({ brand: "", model: "", year_from: "", year_to: "" });
+      setNewApp({ make: "", vehicle: "", model: "", start_year: "", end_year: "", vehicle_type: "" });
     } else {
-      toast.error("Fill all application fields");
+      toast.error("Make, Vehicle and Start Year are required");
     }
   };
 
@@ -598,15 +600,20 @@ export default function AdminProductDetailPage() {
                   </div>
                   
                   {/* Add new application */}
-                  <div className="grid grid-cols-5 gap-2 p-4 bg-[#09090B] border border-[#27272A]">
-                    <Input placeholder="Brand" value={newApp.brand} onChange={(e) => setNewApp({...newApp, brand: e.target.value})} className="bg-[#121212] border-[#27272A]" />
-                    <Input placeholder="Model" value={newApp.model} onChange={(e) => setNewApp({...newApp, model: e.target.value})} className="bg-[#121212] border-[#27272A]" />
-                    <Input placeholder="Year From" type="number" value={newApp.year_from} onChange={(e) => setNewApp({...newApp, year_from: e.target.value})} className="bg-[#121212] border-[#27272A] font-mono" />
-                    <Input placeholder="Year To" type="number" value={newApp.year_to} onChange={(e) => setNewApp({...newApp, year_to: e.target.value})} className="bg-[#121212] border-[#27272A] font-mono" />
-                    <Button onClick={addApplication} className="bg-[#FFB800] text-black hover:bg-[#F59E0B]">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add
-                    </Button>
+                  <div className="p-4 bg-[#09090B] border border-[#27272A] space-y-3">
+                    <div className="grid grid-cols-3 gap-2">
+                      <Input placeholder="Make *" value={newApp.make} onChange={(e) => setNewApp({...newApp, make: e.target.value})} className="bg-[#121212] border-[#27272A]" />
+                      <Input placeholder="Vehicle *" value={newApp.vehicle} onChange={(e) => setNewApp({...newApp, vehicle: e.target.value})} className="bg-[#121212] border-[#27272A]" />
+                      <Input placeholder="Model" value={newApp.model} onChange={(e) => setNewApp({...newApp, model: e.target.value})} className="bg-[#121212] border-[#27272A]" />
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      <Input placeholder="Start Year *" type="number" value={newApp.start_year} onChange={(e) => setNewApp({...newApp, start_year: e.target.value})} className="bg-[#121212] border-[#27272A] font-mono" />
+                      <Input placeholder="End Year (blank=ongoing)" type="number" value={newApp.end_year} onChange={(e) => setNewApp({...newApp, end_year: e.target.value})} className="bg-[#121212] border-[#27272A] font-mono" />
+                      <Input placeholder="Vehicle Type" value={newApp.vehicle_type} onChange={(e) => setNewApp({...newApp, vehicle_type: e.target.value})} className="bg-[#121212] border-[#27272A]" />
+                      <Button onClick={addApplication} className="bg-[#FFB800] text-black hover:bg-[#F59E0B]">
+                        <Plus className="w-4 h-4 mr-2" />Add
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Applications list */}
@@ -614,11 +621,15 @@ export default function AdminProductDetailPage() {
                     <div className="space-y-2">
                       {product.applications.map((app, index) => (
                         <div key={index} className="flex items-center justify-between p-3 bg-[#09090B] border border-[#27272A]">
-                          <div className="flex items-center gap-4">
-                            <Car className="w-4 h-4 text-[#FFB800]" />
-                            <span className="font-mono text-white">{app.brand}</span>
-                            <span className="text-neutral-400">{app.model}</span>
-                            <span className="text-neutral-500 font-mono text-sm">{app.year_from} - {app.year_to}</span>
+                          <div className="flex items-center gap-4 flex-wrap">
+                            <Car className="w-4 h-4 text-[#FFB800] shrink-0" />
+                            <span className="font-mono text-white">{app.make}</span>
+                            <span className="text-[#FFB800]">{app.vehicle}</span>
+                            {app.model && <span className="text-neutral-400">{app.model}</span>}
+                            <span className="text-neutral-500 font-mono text-sm">
+                              {app.start_year || app.year_from}{app.end_year || app.year_to ? ` - ${app.end_year || app.year_to}` : " \u2192"}
+                            </span>
+                            {(app.vehicle_type) && <Badge variant="outline" className="text-xs border-[#27272A]">{app.vehicle_type}</Badge>}
                           </div>
                           <Button variant="ghost" size="sm" onClick={() => removeApplication(index)}>
                             <X className="w-4 h-4 text-red-500" />

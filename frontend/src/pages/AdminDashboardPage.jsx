@@ -83,7 +83,7 @@ function ProductForm({ product, onSave, onClose }) {
   const [loading, setLoading] = useState(false);
   
   // New application
-  const [newApp, setNewApp] = useState({ brand: "", model: "", year_from: "", year_to: "" });
+  const [newApp, setNewApp] = useState({ make: "", vehicle: "", model: "", start_year: "", end_year: "", vehicle_type: "" });
   // New cross reference
   const [newRef, setNewRef] = useState({ manufacturer: "", code: "" });
 
@@ -99,16 +99,19 @@ function ProductForm({ product, onSave, onClose }) {
   };
 
   const addApplication = () => {
-    if (newApp.brand && newApp.model && newApp.year_from && newApp.year_to) {
+    if (newApp.make && newApp.vehicle && newApp.start_year) {
       setFormData(prev => ({
         ...prev,
         applications: [...prev.applications, {
-          ...newApp,
-          year_from: parseInt(newApp.year_from),
-          year_to: parseInt(newApp.year_to)
+          make: newApp.make,
+          vehicle: newApp.vehicle,
+          model: newApp.model || "",
+          start_year: parseInt(newApp.start_year),
+          end_year: newApp.end_year ? parseInt(newApp.end_year) : null,
+          vehicle_type: newApp.vehicle_type || ""
         }]
       }));
-      setNewApp({ brand: "", model: "", year_from: "", year_to: "" });
+      setNewApp({ make: "", vehicle: "", model: "", start_year: "", end_year: "", vehicle_type: "" });
     }
   };
 
@@ -330,48 +333,21 @@ function ProductForm({ product, onSave, onClose }) {
 
       {/* Applications */}
       <div className="border-t border-[#27272A] pt-4">
-        <h4 className="font-heading text-white uppercase text-sm mb-4">Aplicações</h4>
-        <div className="grid grid-cols-5 gap-2 mb-2">
-          <Input
-            placeholder="Marca"
-            value={newApp.brand}
-            onChange={(e) => setNewApp({ ...newApp, brand: e.target.value })}
-            className="bg-[#09090B] border-[#27272A] text-sm"
-          />
-          <Input
-            placeholder="Modelo"
-            value={newApp.model}
-            onChange={(e) => setNewApp({ ...newApp, model: e.target.value })}
-            className="bg-[#09090B] border-[#27272A] text-sm"
-          />
-          <Input
-            placeholder="Ano De"
-            type="number"
-            value={newApp.year_from}
-            onChange={(e) => setNewApp({ ...newApp, year_from: e.target.value })}
-            className="bg-[#09090B] border-[#27272A] text-sm font-mono"
-          />
-          <Input
-            placeholder="Ano Até"
-            type="number"
-            value={newApp.year_to}
-            onChange={(e) => setNewApp({ ...newApp, year_to: e.target.value })}
-            className="bg-[#09090B] border-[#27272A] text-sm font-mono"
-          />
-          <Button onClick={addApplication} variant="outline" className="border-[#27272A]">
-            <Plus className="w-4 h-4" />
-          </Button>
+        <h4 className="font-heading text-white uppercase text-sm mb-4">Applications</h4>
+        <div className="grid grid-cols-4 gap-2 mb-2">
+          <Input placeholder="Make" value={newApp.make} onChange={(e) => setNewApp({ ...newApp, make: e.target.value })} className="bg-[#09090B] border-[#27272A] text-sm" />
+          <Input placeholder="Vehicle" value={newApp.vehicle} onChange={(e) => setNewApp({ ...newApp, vehicle: e.target.value })} className="bg-[#09090B] border-[#27272A] text-sm" />
+          <Input placeholder="Start Year" type="number" value={newApp.start_year} onChange={(e) => setNewApp({ ...newApp, start_year: e.target.value })} className="bg-[#09090B] border-[#27272A] text-sm font-mono" />
+          <Button onClick={addApplication} variant="outline" className="border-[#27272A]"><Plus className="w-4 h-4" /></Button>
         </div>
         {formData.applications.length > 0 && (
           <div className="space-y-2 mt-4">
             {formData.applications.map((app, index) => (
               <div key={index} className="flex items-center gap-2 bg-[#09090B] p-2 rounded">
                 <span className="flex-1 font-mono text-sm text-neutral-300">
-                  {app.brand} {app.model} ({app.year_from}-{app.year_to})
+                  {app.make || app.brand} {app.vehicle || ""} {app.model} ({app.start_year || app.year_from}{app.end_year || app.year_to ? `-${app.end_year || app.year_to}` : "\u2192"})
                 </span>
-                <Button variant="ghost" size="sm" onClick={() => removeApplication(index)}>
-                  <X className="w-4 h-4 text-red-500" />
-                </Button>
+                <Button variant="ghost" size="sm" onClick={() => removeApplication(index)}><X className="w-4 h-4 text-red-500" /></Button>
               </div>
             ))}
           </div>

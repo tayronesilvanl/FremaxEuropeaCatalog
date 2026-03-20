@@ -77,7 +77,7 @@ function ProductCard({ product }) {
         </p>
         {product.applications && product.applications.length > 0 && (
           <p className="text-xs text-neutral-500 font-mono mt-2">
-            {product.applications[0].brand} {product.applications[0].model}
+            {product.applications[0].make} {product.applications[0].vehicle}
           </p>
         )}
       </div>
@@ -99,7 +99,8 @@ export default function SearchResultsPage() {
   // Search filters
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [productLine, setProductLine] = useState(searchParams.get("line") || "");
-  const [brand, setBrand] = useState(searchParams.get("brand") || "");
+  const [make, setMake] = useState(searchParams.get("make") || "");
+  const [vehicle, setVehicle] = useState(searchParams.get("vehicle") || "");
   const [model, setModel] = useState(searchParams.get("model") || "");
   const [year, setYear] = useState(searchParams.get("year") || "");
   
@@ -118,7 +119,8 @@ export default function SearchResultsPage() {
       const searchBody = {
         query: query || null,
         product_line: productLine && productLine !== "all" ? productLine : null,
-        brand: brand || null,
+        make: make || null,
+        vehicle: vehicle || null,
         model: model || null,
         year: year ? parseInt(year) : null,
         outer_diameter_min: outerDiameter ? parseFloat(outerDiameter) - 2 : null,
@@ -155,7 +157,7 @@ export default function SearchResultsPage() {
     } finally {
       setLoading(false);
     }
-  }, [query, productLine, brand, model, year, outerDiameter, discThickness, centerHole, quantityHoles, padWidth, padHeight, padThickness]);
+  }, [query, productLine, make, vehicle, model, year, outerDiameter, discThickness, centerHole, quantityHoles, padWidth, padHeight, padThickness]);
 
   useEffect(() => {
     searchProducts(1);
@@ -165,7 +167,8 @@ export default function SearchResultsPage() {
     const params = new URLSearchParams();
     if (query) params.set("q", query);
     if (productLine) params.set("line", productLine);
-    if (brand) params.set("brand", brand);
+    if (make) params.set("make", make);
+    if (vehicle) params.set("vehicle", vehicle);
     if (model) params.set("model", model);
     if (year) params.set("year", year);
     if (outerDiameter) params.set("od", outerDiameter);
@@ -183,7 +186,8 @@ export default function SearchResultsPage() {
   const clearFilters = () => {
     setQuery("");
     setProductLine("");
-    setBrand("");
+    setMake("");
+    setVehicle("");
     setModel("");
     setYear("");
     setOuterDiameter("");
@@ -197,7 +201,7 @@ export default function SearchResultsPage() {
   };
 
   const activeFiltersCount = [
-    query, productLine, brand, model, year, 
+    query, productLine, make, vehicle, model, year, 
     outerDiameter, discThickness, centerHole, quantityHoles,
     padWidth, padHeight, padThickness
   ].filter(Boolean).length;
@@ -269,35 +273,47 @@ export default function SearchResultsPage() {
                     <h4 className="font-heading text-white uppercase text-sm">Application</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">BRAND</Label>
+                        <Label className="text-neutral-400 font-mono text-xs">MAKE</Label>
                         <Input
                           type="text"
-                          placeholder="Ex: VW"
+                          placeholder="Ex: Volkswagen"
                           className="bg-[#09090B] border-[#27272A]"
-                          value={brand}
-                          onChange={(e) => setBrand(e.target.value)}
+                          value={make}
+                          onChange={(e) => setMake(e.target.value)}
                         />
                       </div>
+                      <div className="space-y-2">
+                        <Label className="text-neutral-400 font-mono text-xs">VEHICLE</Label>
+                        <Input
+                          type="text"
+                          placeholder="Ex: Golf"
+                          className="bg-[#09090B] border-[#27272A]"
+                          value={vehicle}
+                          onChange={(e) => setVehicle(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className="text-neutral-400 font-mono text-xs">MODEL</Label>
                         <Input
                           type="text"
-                          placeholder="Ex: Golf"
+                          placeholder="Ex: GTI"
                           className="bg-[#09090B] border-[#27272A]"
                           value={model}
                           onChange={(e) => setModel(e.target.value)}
                         />
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-neutral-400 font-mono text-xs">YEAR</Label>
-                      <Input
-                        type="number"
-                        placeholder="Ex: 2020"
-                        className="bg-[#09090B] border-[#27272A]"
-                        value={year}
-                        onChange={(e) => setYear(e.target.value)}
-                      />
+                      <div className="space-y-2">
+                        <Label className="text-neutral-400 font-mono text-xs">YEAR</Label>
+                        <Input
+                          type="number"
+                          placeholder="Ex: 2020"
+                          className="bg-[#09090B] border-[#27272A]"
+                          value={year}
+                          onChange={(e) => setYear(e.target.value)}
+                        />
+                      </div>
                     </div>
                   </div>
 

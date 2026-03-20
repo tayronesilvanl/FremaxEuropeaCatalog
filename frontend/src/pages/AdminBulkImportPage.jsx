@@ -207,15 +207,16 @@ export default function AdminBulkImportPage() {
               description="Add vehicle applications to existing products"
               icon={Car}
               endpoint="/admin/bulk/applications"
-              templateColumns="part_number,brand,model,year_from,year_to"
-              templateExample="BD-1234,Volkswagen,Golf,2015,2024"
+              templateColumns="part_number,make,vehicle,model,start_year,end_year,vehicle_type"
+              templateExample="BD-1234,Volkswagen,Golf,GTI 2.0,2015,2024,Passenger Car"
             />
             <div className="mt-4 p-4 bg-[#121212] border border-[#27272A] rounded">
               <h4 className="font-heading text-white uppercase mb-2">Notes</h4>
               <ul className="text-neutral-400 text-sm list-disc list-inside space-y-1">
                 <li>Products must exist before importing applications</li>
                 <li>Duplicate applications will be ignored</li>
-                <li>Year range is inclusive (2015-2024 = all years from 2015 to 2024)</li>
+                <li><span className="font-mono">end_year</span> can be left blank if the vehicle is still in production</li>
+                <li><span className="font-mono">model</span> and <span className="font-mono">vehicle_type</span> are optional</li>
               </ul>
             </div>
           </TabsContent>

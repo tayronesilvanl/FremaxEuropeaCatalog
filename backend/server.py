@@ -51,10 +51,12 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 class Application(BaseModel):
-    brand: str
-    model: str
-    year_from: int
-    year_to: int
+    make: str
+    vehicle: str
+    model: str = ""
+    start_year: int = 0
+    end_year: Optional[int] = None
+    vehicle_type: str = ""
 
 class CrossReference(BaseModel):
     manufacturer: str
@@ -151,11 +153,13 @@ class ProductUpdate(BaseModel):
     notes: Optional[str] = None
 
 class SearchQuery(BaseModel):
-    query: Optional[str] = None  # for part number, original code, cross reference
+    query: Optional[str] = None
     product_line: Optional[str] = None
-    brand: Optional[str] = None
+    make: Optional[str] = None
+    vehicle: Optional[str] = None
     model: Optional[str] = None
     year: Optional[int] = None
+    vehicle_type: Optional[str] = None
     # Disc measurements
     outer_diameter_min: Optional[float] = None
     outer_diameter_max: Optional[float] = None
@@ -266,16 +270,24 @@ async def search_products(search: SearchQuery, page: int = 1, page_size: int = 2
         query["product_line"] = search.product_line
     
     # Application filter
-    if search.brand or search.model or search.year:
+    if search.make or search.vehicle or search.model or search.year or search.vehicle_type:
         app_query = {}
-        if search.brand:
-            app_query["applications.brand"] = {"$regex": search.brand, "$options": "i"}
+        if search.make:
+            app_query["applications.make"] = {"$regex": search.make, "$options": "i"}
+        if search.vehicle:
+            app_query["applications.vehicle"] = {"$regex": search.vehicle, "$options": "i"}
         if search.model:
             app_query["applications.model"] = {"$regex": search.model, "$options": "i"}
+        if search.vehicle_type:
+            app_query["applications.vehicle_type"] = {"$regex": search.vehicle_type, "$options": "i"}
         if search.year:
             app_query["$and"] = [
-                {"applications.year_from": {"$lte": search.year}},
-                {"applications.year_to": {"$gte": search.year}}
+                {"applications.start_year": {"$lte": search.year}},
+                {"$or": [
+                    {"applications.end_year": {"$gte": search.year}},
+                    {"applications.end_year": None},
+                    {"applications.end_year": {"$exists": False}}
+                ]}
             ]
         query.update(app_query)
     
@@ -330,28 +342,55 @@ async def search_products(search: SearchQuery, page: int = 1, page_size: int = 2
         total_pages=(total + page_size - 1) // page_size if total > 0 else 1
     )
 
-@api_router.get("/brands")
-async def get_brands():
-    """Get all unique vehicle brands"""
+@api_router.get("/makes")
+async def get_makes():
+    """Get all unique vehicle makes"""
     pipeline = [
         {"$unwind": "$applications"},
-        {"$group": {"_id": "$applications.brand"}},
+        {"$group": {"_id": "$applications.make"}},
         {"$sort": {"_id": 1}}
     ]
-    brands = await db.products.aggregate(pipeline).to_list(1000)
-    return [b["_id"] for b in brands if b["_id"]]
+    makes = await db.products.aggregate(pipeline).to_list(1000)
+    return [m["_id"] for m in makes if m["_id"]]
 
-@api_router.get("/models/{brand}")
-async def get_models(brand: str):
-    """Get all models for a specific brand"""
+@api_router.get("/vehicles/{make}")
+async def get_vehicles(make: str):
+    """Get all vehicles for a specific make"""
     pipeline = [
         {"$unwind": "$applications"},
-        {"$match": {"applications.brand": {"$regex": brand, "$options": "i"}}},
+        {"$match": {"applications.make": {"$regex": f"^{make}$", "$options": "i"}}},
+        {"$group": {"_id": "$applications.vehicle"}},
+        {"$sort": {"_id": 1}}
+    ]
+    vehicles = await db.products.aggregate(pipeline).to_list(1000)
+    return [v["_id"] for v in vehicles if v["_id"]]
+
+@api_router.get("/models/{make}/{vehicle}")
+async def get_models_for_vehicle(make: str, vehicle: str):
+    """Get all models for a specific make and vehicle"""
+    pipeline = [
+        {"$unwind": "$applications"},
+        {"$match": {
+            "applications.make": {"$regex": f"^{make}$", "$options": "i"},
+            "applications.vehicle": {"$regex": f"^{vehicle}$", "$options": "i"}
+        }},
         {"$group": {"_id": "$applications.model"}},
         {"$sort": {"_id": 1}}
     ]
     models = await db.products.aggregate(pipeline).to_list(1000)
     return [m["_id"] for m in models if m["_id"]]
+
+@api_router.get("/vehicle-types")
+async def get_vehicle_types():
+    """Get all vehicle types"""
+    pipeline = [
+        {"$unwind": "$applications"},
+        {"$match": {"applications.vehicle_type": {"$ne": ""}}},
+        {"$group": {"_id": "$applications.vehicle_type"}},
+        {"$sort": {"_id": 1}}
+    ]
+    types = await db.products.aggregate(pipeline).to_list(100)
+    return [t["_id"] for t in types if t["_id"]]
 
 @api_router.get("/product-lines")
 async def get_product_lines():
@@ -427,15 +466,15 @@ async def get_related_products(product_id: str, limit: int = 6):
         return related
     
     # Find products with overlapping applications
-    brand_models = [(app["brand"], app["model"]) for app in applications]
+    make_vehicles = [(app["make"], app["vehicle"]) for app in applications]
     
     or_conditions = []
-    for brand, model in brand_models:
+    for make, vehicle in make_vehicles:
         or_conditions.append({
             "applications": {
                 "$elemMatch": {
-                    "brand": {"$regex": brand, "$options": "i"},
-                    "model": {"$regex": model, "$options": "i"}
+                    "make": {"$regex": make, "$options": "i"},
+                    "vehicle": {"$regex": vehicle, "$options": "i"}
                 }
             }
         })
@@ -568,17 +607,19 @@ async def bulk_import_products(file: UploadFile = File(...), username: str = Dep
                 if row.get("width"):
                     product["measurements"]["width"] = float(row["width"])
                 
-                # Parse applications (comma-separated: brand|model|year_from|year_to)
+                # Parse applications (semicolon-separated: make|vehicle|model|start_year|end_year|vehicle_type)
                 if row.get("applications"):
                     apps = row["applications"].split(";")
                     for app in apps:
                         parts = app.split("|")
                         if len(parts) >= 4:
                             product["applications"].append({
-                                "brand": parts[0],
-                                "model": parts[1],
-                                "year_from": int(parts[2]),
-                                "year_to": int(parts[3])
+                                "make": parts[0],
+                                "vehicle": parts[1],
+                                "model": parts[2] if len(parts) > 2 else "",
+                                "start_year": int(parts[3]) if len(parts) > 3 and parts[3].strip() else 0,
+                                "end_year": int(parts[4]) if len(parts) > 4 and parts[4].strip() else None,
+                                "vehicle_type": parts[5] if len(parts) > 5 else ""
                             })
                 
                 # Parse cross references (comma-separated: manufacturer|code)
@@ -631,7 +672,7 @@ async def bulk_import_products(file: UploadFile = File(...), username: str = Dep
 
 @api_router.post("/admin/bulk/applications")
 async def bulk_import_applications(file: UploadFile = File(...), username: str = Depends(verify_token)):
-    """Import applications from CSV: part_number, brand, model, year_from, year_to"""
+    """Import applications from CSV: part_number, make, vehicle, model, start_year, end_year, vehicle_type"""
     content = await file.read()
     
     imported_count = 0
@@ -647,14 +688,16 @@ async def bulk_import_applications(file: UploadFile = File(...), username: str =
                 continue
             
             application = {
-                "brand": row.get("brand", "").strip(),
+                "make": row.get("make", "").strip(),
+                "vehicle": row.get("vehicle", "").strip(),
                 "model": row.get("model", "").strip(),
-                "year_from": int(row.get("year_from", 0)),
-                "year_to": int(row.get("year_to", 0))
+                "start_year": int(row.get("start_year", 0)) if row.get("start_year", "").strip() else 0,
+                "end_year": int(row.get("end_year")) if row.get("end_year", "").strip() else None,
+                "vehicle_type": row.get("vehicle_type", "").strip()
             }
             
-            if not application["brand"] or not application["model"]:
-                errors.append({"part_number": part_number, "error": "Missing brand or model"})
+            if not application["make"] or not application["vehicle"]:
+                errors.append({"part_number": part_number, "error": "Missing make or vehicle"})
                 continue
             
             # Add application to product
@@ -858,11 +901,16 @@ async def add_product_application(product_id: str, application: Application, use
     return {"message": "Application added"}
 
 @api_router.delete("/admin/products/{product_id}/applications")
-async def remove_product_application(product_id: str, brand: str, model: str, year_from: int, year_to: int, username: str = Depends(verify_token)):
+async def remove_product_application(product_id: str, make: str, vehicle: str, model: str = "", start_year: int = 0, username: str = Depends(verify_token)):
     """Remove a specific application from a product"""
+    pull_query = {"make": make, "vehicle": vehicle}
+    if model:
+        pull_query["model"] = model
+    if start_year:
+        pull_query["start_year"] = start_year
     result = await db.products.update_one(
         {"id": product_id},
-        {"$pull": {"applications": {"brand": brand, "model": model, "year_from": year_from, "year_to": year_to}},
+        {"$pull": {"applications": pull_query},
          "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
     )
     if result.matched_count == 0:
@@ -1035,10 +1083,10 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_seed_admin():
     """Create default admin if not exists"""
-    existing = await db.admins.find_one({"username": "admin"})
+    existing = await db.admins.find_one({"username": "adminfleu"})
     if not existing:
         admin = {
-            "username": "admin",
+            "username": "adminfleu",
             "password": hash_password("admin123"),
             "created_at": datetime.now(timezone.utc).isoformat()
         }

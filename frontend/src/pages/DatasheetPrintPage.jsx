@@ -155,17 +155,23 @@ export default function DatasheetPrintPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="py-2 text-left text-gray-500 font-normal">Brand</th>
+                    <th className="py-2 text-left text-gray-500 font-normal">Make</th>
+                    <th className="py-2 text-left text-gray-500 font-normal">Vehicle</th>
                     <th className="py-2 text-left text-gray-500 font-normal">Model</th>
                     <th className="py-2 text-left text-gray-500 font-normal">Years</th>
+                    <th className="py-2 text-left text-gray-500 font-normal">Type</th>
                   </tr>
                 </thead>
                 <tbody>
                   {product.applications.map((app, index) => (
                     <tr key={index} className="border-b border-gray-100">
-                      <td className="py-2 font-semibold text-black">{app.brand}</td>
+                      <td className="py-2 font-semibold text-black">{app.make || app.brand}</td>
+                      <td className="py-2 text-black">{app.vehicle || ""}</td>
                       <td className="py-2 text-black">{app.model}</td>
-                      <td className="py-2 font-mono text-gray-600">{app.year_from} - {app.year_to}</td>
+                      <td className="py-2 font-mono text-gray-600">
+                        {app.start_year || app.year_from}{(app.end_year || app.year_to) ? ` - ${app.end_year || app.year_to}` : " \u2192"}
+                      </td>
+                      <td className="py-2 text-gray-600">{app.vehicle_type || "-"}</td>
                     </tr>
                   ))}
                 </tbody>
