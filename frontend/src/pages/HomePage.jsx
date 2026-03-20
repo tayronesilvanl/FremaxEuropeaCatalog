@@ -111,7 +111,7 @@ export default function HomePage() {
       <main className="relative z-10">
         <section className="hero-section py-20 md:py-32">
           <div className="hero-content text-center">
-            <h1 className="font-heading text-5xl md:text-7xl font-bold text-white uppercase tracking-tight mb-4">Product Catalog</h1>
+            <h1 className="font-heading text-5xl md:text-7xl font-bold text-white uppercase tracking-tight mb-4">Fremax Product Catalog</h1>
             <p className="text-lg md:text-xl text-neutral-400 mb-12 max-w-2xl mx-auto">
               Search by code, application or measurements. Find complete technical specifications for all FREMAX products.
             </p>

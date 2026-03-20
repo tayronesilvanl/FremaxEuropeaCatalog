@@ -196,7 +196,7 @@ export default function ProductDatasheetPage() {
             <h1 className="font-heading text-4xl md:text-6xl text-white uppercase tracking-tight mb-2" data-testid="product-part-number">{product.part_number}</h1>
             <p className="text-lg text-neutral-400" data-testid="product-description">{product.description}</p>
           </div>
-          <Button className="bg-[#FFB800] text-black hover:bg-[#F59E0B] font-heading uppercase tracking-wider h-12 px-6" onClick={() => window.open(`/datasheet/${product.id}`, '_blank')} data-testid="open-datasheet-button">
+          <Button className="bg-[#FFB800] text-black hover:bg-[#F59E0B] font-heading uppercase tracking-wider h-12 px-6" onClick={() => window.open(`/#/datasheet/${product.id}`, '_blank')} data-testid="open-datasheet-button">
             <ExternalLink className="w-4 h-4 mr-2" />Open Datasheet
           </Button>
         </div>
