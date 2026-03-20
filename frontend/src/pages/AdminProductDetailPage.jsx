@@ -523,6 +523,16 @@ export default function AdminProductDetailPage() {
                           <Input type="number" value={product.measurements?.thickness || ""} onChange={(e) => handleMeasurementChange("thickness", e.target.value)} className="bg-[#09090B] border-[#27272A] font-mono" />
                         </div>
                       </div>
+                      <div className="space-y-2">
+                        <Label className="text-neutral-400 font-mono text-xs">FITTING POSITION</Label>
+                        <Select value={product.measurements?.fitting_position || ""} onValueChange={(v) => handleMeasurementChange("fitting_position", v)}>
+                          <SelectTrigger className="bg-[#09090B] border-[#27272A]"><SelectValue placeholder="Select position" /></SelectTrigger>
+                          <SelectContent className="bg-[#121212] border-[#27272A]">
+                            <SelectItem value="Front">Front</SelectItem>
+                            <SelectItem value="Rear">Rear</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <div className="grid grid-cols-3 gap-4">
                         <div className="flex items-center gap-3">
                           <Switch checked={product.measurements?.acoustic_wear_warning || false} onCheckedChange={(v) => handleMeasurementChange("acoustic_wear_warning", v, true)} />
@@ -542,18 +552,30 @@ export default function AdminProductDetailPage() {
 
                   {/* SHOE MEASUREMENTS */}
                   {product.product_line === "shoe" && (
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">THICKNESS (mm)</Label>
-                        <Input type="number" value={product.measurements?.thickness || ""} onChange={(e) => handleMeasurementChange("thickness", e.target.value)} className="bg-[#09090B] border-[#27272A] font-mono" />
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-neutral-400 font-mono text-xs">THICKNESS (mm)</Label>
+                          <Input type="number" value={product.measurements?.thickness || ""} onChange={(e) => handleMeasurementChange("thickness", e.target.value)} className="bg-[#09090B] border-[#27272A] font-mono" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-neutral-400 font-mono text-xs">DRUM DIAMETER (mm)</Label>
+                          <Input type="number" value={product.measurements?.drum_diameter || ""} onChange={(e) => handleMeasurementChange("drum_diameter", e.target.value)} className="bg-[#09090B] border-[#27272A] font-mono" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-neutral-400 font-mono text-xs">WIDTH (mm)</Label>
+                          <Input type="number" value={product.measurements?.width || ""} onChange={(e) => handleMeasurementChange("width", e.target.value)} className="bg-[#09090B] border-[#27272A] font-mono" />
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">DRUM DIAMETER (mm)</Label>
-                        <Input type="number" value={product.measurements?.drum_diameter || ""} onChange={(e) => handleMeasurementChange("drum_diameter", e.target.value)} className="bg-[#09090B] border-[#27272A] font-mono" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-neutral-400 font-mono text-xs">WIDTH (mm)</Label>
-                        <Input type="number" value={product.measurements?.width || ""} onChange={(e) => handleMeasurementChange("width", e.target.value)} className="bg-[#09090B] border-[#27272A] font-mono" />
+                        <Label className="text-neutral-400 font-mono text-xs">FITTING POSITION</Label>
+                        <Select value={product.measurements?.fitting_position || ""} onValueChange={(v) => handleMeasurementChange("fitting_position", v)}>
+                          <SelectTrigger className="bg-[#09090B] border-[#27272A]"><SelectValue placeholder="Select position" /></SelectTrigger>
+                          <SelectContent className="bg-[#121212] border-[#27272A]">
+                            <SelectItem value="Front">Front</SelectItem>
+                            <SelectItem value="Rear">Rear</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   )}

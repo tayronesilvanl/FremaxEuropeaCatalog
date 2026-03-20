@@ -68,6 +68,9 @@ function ProductCard({ product }) {
       <div className="product-card-info">
         <p className="font-mono text-xs text-neutral-500 uppercase">
           {productLineLabels[product.product_line]}
+          {product.measurements?.fitting_position && (
+            <span className="text-[#FFB800] ml-2">{product.measurements.fitting_position}</span>
+          )}
         </p>
         <h3 className="font-heading text-xl text-white uppercase tracking-tight group-hover:text-[#FFB800] transition-colors">
           {product.part_number}

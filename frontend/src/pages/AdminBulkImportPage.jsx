@@ -258,11 +258,11 @@ export default function AdminBulkImportPage() {
                 </div>
                 <div>
                   <span className="text-[#FFB800] font-mono">PAD:</span>
-                  <p className="text-neutral-400">width, height, thickness, acoustic_wear_warning, electronic_wear_sensor, extra_components_included</p>
+                  <p className="text-neutral-400">width, height, thickness, acoustic_wear_warning, electronic_wear_sensor, extra_components_included, fitting_position</p>
                 </div>
                 <div>
                   <span className="text-[#FFB800] font-mono">SHOE:</span>
-                  <p className="text-neutral-400">thickness, drum_diameter, width</p>
+                  <p className="text-neutral-400">thickness, drum_diameter, width, fitting_position</p>
                 </div>
                 <div>
                   <span className="text-[#FFB800] font-mono">CALIPER:</span>

@@ -84,6 +84,7 @@ class MeasurementsPad(BaseModel):
     acoustic_wear_warning: Optional[bool] = None
     electronic_wear_sensor: Optional[bool] = None
     extra_components_included: Optional[bool] = None
+    fitting_position: Optional[str] = None
 
 class MeasurementsDrum(BaseModel):
     outer_diameter: Optional[float] = None
@@ -99,6 +100,7 @@ class MeasurementsShoe(BaseModel):
     thickness: Optional[float] = None
     drum_diameter: Optional[float] = None
     width: Optional[float] = None
+    fitting_position: Optional[str] = None
 
 class MeasurementsCaliper(BaseModel):
     piston_size: Optional[float] = None
@@ -771,10 +773,10 @@ async def bulk_import_measurements(file: UploadFile = File(...), username: str =
                    "quantity_holes", "pcd", "disc_type", "drilled", "slotted", "fitting_position", 
                    "disc_drum", "paired_part_number"]
     pad_fields = ["width", "height", "thickness", "acoustic_wear_warning", 
-                  "electronic_wear_sensor", "extra_components_included"]
+                  "electronic_wear_sensor", "extra_components_included", "fitting_position"]
     drum_fields = ["outer_diameter", "inner_diameter", "maximum_diameter", "height", 
                    "offset", "inner_hole", "quantity_holes", "fitting_position"]
-    shoe_fields = ["thickness", "drum_diameter", "width"]
+    shoe_fields = ["thickness", "drum_diameter", "width", "fitting_position"]
     caliper_fields = ["piston_size", "fitting_position", "electronic_brake_caliper", "paired_part_number"]
     
     all_fields = set(disc_fields + pad_fields + drum_fields + shoe_fields + caliper_fields)
